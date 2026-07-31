@@ -1,0 +1,3476 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src 'self' https: data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>逢甲大學 學系網站健檢儀表板</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" integrity="sha384-hs5SINUk7GPohxRis+rS7grpSWEbtOIJ3sRoseBKg3CDPIKpG55RfSenbvA6ALOt" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans TC','Microsoft JhengHei',sans-serif;background:#f0efe9;color:#1a1a18;font-size:15px;line-height:1.5;}
+.layout{display:flex;height:100vh;overflow:hidden;}
+
+/* ── Sidebar ── */
+.sb{width:250px;flex-shrink:0;overflow-y:auto;border-right:1px solid #dddcd4;background:#f7f6f1;display:flex;flex-direction:column;}
+.sb-hdr{padding:.85rem 1rem .7rem;border-bottom:1px solid #dddcd4;flex-shrink:0;}
+.sb-logo{display:flex;align-items:center;gap:8px;margin-bottom:.4rem;}
+.sb-logo i{font-size:20px;color:#C8102E;}
+.sb-t{font-size:14.5px;font-weight:700;color:#1a1a18;line-height:1.35;}
+.sb-m{font-size:11.5px;color:#888780;margin-top:3px;line-height:1.6;}
+.sb-btns{display:flex;flex-direction:column;gap:5px;margin-top:8px;}
+.sb-btn{display:flex;align-items:center;gap:6px;width:100%;padding:6px 10px;font-size:12px;background:#fff;border:1px solid #d3d1c7;border-radius:7px;cursor:pointer;color:#534AB7;font-weight:600;text-decoration:none;transition:background .12s;}
+.sb-btn:hover{background:#EEEDFE;border-color:#AFA9EC;}
+.sb-btn.red{color:#C8102E;}
+.sb-btn.red:hover{background:#fff0f2;border-color:#f5a0a8;}
+.sb-btn-disabled{color:#b0adb8;cursor:default;background:#f7f6f1;border-color:#e2e0d8;}
+.sb-btn-disabled:hover{background:#f7f6f1;border-color:#e2e0d8;}
+.soon{font-size:10px;background:#e2e0d8;color:#888780;padding:1px 5px;border-radius:8px;margin-left:2px;}
+.sb-body{flex:1;overflow-y:auto;padding-bottom:.75rem;}
+.col-h{display:flex;align-items:center;gap:7px;margin-top:10px;padding:.45rem .9rem;font-size:12.5px;font-weight:800;color:#fff;background:linear-gradient(90deg,#C8102E 0%,#a00d26 100%);letter-spacing:.03em;}
+.di{display:flex;align-items:center;gap:8px;padding:.35rem 1rem;cursor:pointer;color:#5F5E5A;border-left:3px solid transparent;transition:background .12s;}
+.di:hover{background:rgba(0,0,0,.05);color:#1a1a18;}
+.di.act{background:#fff;color:#C8102E;border-left-color:#C8102E;font-weight:700;}
+.di-n{font-size:13px;line-height:1.35;flex:1;}
+.di-score{font-size:11px;font-weight:700;padding:1px 6px;border-radius:10px;flex-shrink:0;}
+.sA{background:#dcfce7;color:#15803d;}
+.sB{background:#dbeafe;color:#1d4ed8;}
+.sC{background:#fef9c3;color:#a16207;}
+.sD{background:#fee2e2;color:#b91c1c;}
+.sP{background:#f1f5f9;color:#94a3b8;}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{display:flex;align-items:center;gap:8px;background:#fff;border-bottom:1px solid #dddcd4;padding:.6rem 1.4rem;flex-shrink:0;font-size:12.5px;color:#888780;}
+.topbar strong{color:#1a1a18;}
+.tb-bar{width:110px;height:7px;background:#ebe9e0;border-radius:4px;overflow:hidden;flex-shrink:0;}
+.tb-bar-f{height:100%;background:linear-gradient(90deg,#C8102E,#a00d26);border-radius:4px;transition:width .5s ease;}
+.mn{flex:1;overflow-y:auto;padding:1.1rem 1.4rem;background:#f0efe9;}
+.empty{text-align:center;padding:5rem 2rem;color:#B4B2A9;font-size:14px;}
+.empty i{font-size:28px;display:block;margin-bottom:.6rem;}
+
+/* ── Cards ── */
+.card{background:#fff;border-radius:12px;padding:1rem 1.2rem;margin-bottom:.8rem;border:1px solid #e5e4dc;}
+.card-title{font-size:12px;font-weight:700;color:#888780;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.7rem;display:flex;align-items:center;gap:6px;}
+.dept-hd{display:flex;align-items:flex-start;gap:14px;}
+.score-circle{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;flex-shrink:0;}
+.dept-info h2{font-size:19px;font-weight:700;margin-bottom:3px;}
+.dept-info .college-tag{font-size:11px;color:#C8102E;font-weight:700;margin-bottom:4px;}
+.dept-info .url-link{font-size:12px;color:#185FA5;text-decoration:none;}
+.dept-info .url-link:hover{text-decoration:underline;}
+.dept-info .eval-date{font-size:11px;color:#888780;margin-top:2px;}
+.pending-note{background:#f8fafc;border-radius:8px;padding:2.5rem;text-align:center;color:#94a3b8;font-size:13px;}
+
+/* ── Dim bars ── */
+.dim-grid{display:flex;flex-direction:column;gap:7px;}
+.dbar-row{display:flex;align-items:center;gap:8px;}
+.dbar-name{font-size:12px;color:#5F5E5A;width:138px;flex-shrink:0;line-height:1.3;}
+.dbar-bg{flex:1;background:#ebe9e0;border-radius:6px;height:9px;overflow:hidden;}
+.dbar-fill{height:100%;border-radius:6px;transition:width .5s ease;}
+.dbar-val{font-size:12px;font-weight:700;color:#1a1a18;width:42px;text-align:right;}
+
+/* ── Two-col for radar+bars ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+
+/* ── Radar ── */
+.radar-wrap{display:flex;justify-content:center;}
+.radar-wrap canvas{max-width:240px;max-height:240px;}
+
+/* ── Lists ── */
+.sec-lbl{font-size:11px;font-weight:700;color:#888780;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:4px;}
+.item-list{list-style:none;display:flex;flex-direction:column;gap:6px;}
+.item-list li{font-size:14px;padding:9px 12px 9px 32px;border-radius:8px;position:relative;line-height:1.65;}
+.hl li{background:#f0fdf4;color:#166534;}
+.hl li::before{content:'✓';position:absolute;left:10px;font-weight:700;color:#16a34a;}
+.pl li{background:#fff1f2;color:#991b1b;}
+.pl li::before{content:'⚠';position:absolute;left:9px;}
+.fx{counter-reset:s}
+.fx li{background:#fefce8;color:#78350f;counter-increment:s;}
+.fx li::before{content:counter(s);position:absolute;left:10px;font-weight:800;color:#d97706;}
+
+/* ── Per-page cards (two-col) ── */
+.pages-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:900px){.pages-grid{grid-template-columns:1fr;}}
+.page-card{background:#fff;border-radius:11px;border:1px solid #e5e4dc;overflow:hidden;}
+.page-card-hd{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #e5e4dc;background:#f7f6f1;}
+.page-card-name{font-size:13.5px;font-weight:700;flex:1;}
+.page-card-scores{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.ps{display:inline-flex;align-items:center;justify-content:center;width:32px;height:20px;border-radius:5px;font-size:11px;font-weight:700;color:#fff;}
+.psA{background:#16a34a} .psB{background:#2563eb} .psC{background:#d97706} .psD{background:#dc2626} .psN{background:#94a3b8}
+.dim-mini{font-size:10px;color:#888780;background:#ebe9e0;border-radius:4px;padding:1px 5px;}
+.page-card-body{padding:10px 14px;}
+.page-note-text{font-size:13px;color:#374151;line-height:1.75;}
+.pg-link{color:#185FA5;text-decoration:none;font-size:11px;margin-left:auto;flex-shrink:0;}
+.pg-link:hover{text-decoration:underline;}
+
+/* ── Rubric ── */
+.ru-card{background:#f8fafc;border-radius:9px;padding:12px 14px;margin-bottom:10px;border-left:3px solid #C8102E;}
+.ru-card h4{font-size:13px;font-weight:700;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
+.ru-pts{font-size:10.5px;background:#C8102E;color:#fff;padding:2px 8px;border-radius:20px;}
+.ru-card p{font-size:12px;color:#64748b;line-height:1.65;}
+.excl-note{background:#fff8f0;border-radius:9px;padding:11px 14px;font-size:12px;color:#78350f;line-height:1.7;}
+.imp-note{background:#fef2f2;border:1px solid #fecaca;border-radius:9px;padding:11px 14px;font-size:12px;color:#991b1b;line-height:1.8;margin-bottom:10px;}
+.imp-note ul{margin:4px 0 0 18px;}
+.ru-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:11.5px;}
+.ru-tbl th{background:#eef1f5;color:#475569;font-weight:700;text-align:left;padding:5px 8px;border:1px solid #e2e8f0;}
+.ru-tbl td{padding:5px 8px;border:1px solid #e2e8f0;color:#475569;vertical-align:top;line-height:1.6;}
+.ru-tbl td:first-child,.ru-tbl th:first-child{white-space:nowrap;}
+.ru-sub{font-size:11px;color:#94a3b8;margin-top:6px;line-height:1.6;}
+
+/* ── Mobile ── */
+.hb-btn{display:none;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #d3d1c7;border-radius:7px;background:#fff;cursor:pointer;color:#1a1a18;font-size:16px;flex-shrink:0;}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:55;}
+.sb-overlay.show{display:block;}
+.sb-close{display:none;}
+@media(max-width:768px){
+  .hb-btn{display:inline-flex;}
+  .sb{position:fixed;top:0;left:-86vw;width:82vw;max-width:320px;height:100vh;z-index:60;box-shadow:2px 0 18px rgba(0,0,0,.3);transition:left .25s ease;}
+  .sb.open{left:0;}
+  .sb-close{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:none;background:#ebe9e0;border-radius:6px;cursor:pointer;color:#5F5E5A;font-size:14px;margin-left:auto;}
+  .topbar{flex-wrap:wrap;padding:.55rem .8rem;row-gap:6px;}
+  .topbar .legend-note{display:none;}
+  .tb-bar{width:70px;}
+  .mn{padding:.85rem .7rem;}
+  .card{padding:.85rem .9rem;border-radius:10px;}
+  .dept-hd{flex-wrap:wrap;gap:10px;}
+  .score-circle{width:54px;height:54px;font-size:19px;}
+  .dept-info h2{font-size:16.5px;}
+  .dbar-name{width:104px;font-size:11px;}
+  .dbar-val{width:34px;}
+  .ru-tbl{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;}
+  .ru-tbl thead,.ru-tbl tbody,.ru-tbl tr{display:table;width:100%;table-layout:fixed;}
+  .item-list li{font-size:13.5px;padding:8px 10px 8px 30px;}
+  .page-card-hd{flex-wrap:wrap;}
+  .radar-wrap canvas{max-width:190px;max-height:190px;}
+}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:2px;border-bottom:2px solid #e5e4dc;margin-bottom:1rem;}
+.tab{padding:8px 14px;border:none;background:none;cursor:pointer;font-size:12.5px;font-weight:700;color:#888780;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .12s;}
+.tab.on{color:#C8102E;border-bottom-color:#C8102E;}
+.tab-panel{display:none;}
+.tab-panel.on{display:block;}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sb" id="sb">
+  <div class="sb-hdr">
+    <div class="sb-logo">
+      <i class="ti ti-stethoscope"></i>
+      <div class="sb-t">逢甲大學<br>學系網站健檢儀表板</div>
+      <button class="sb-close" id="sb-close-btn" aria-label="關閉選單"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sb-m">秘書處公共事務組<br>評分標準 v5.0（七項目）｜ 2026-07-11</div>
+    <div class="sb-btns">
+      <a class="sb-btn red" href="https://fengchia1961.github.io/fcu-news-dashboard/" target="_blank" rel="noopener noreferrer">
+        <i class="ti ti-news"></i> FCU 新聞監測儀表板
+      </a>
+      <a class="sb-btn" href="https://fengchia1961.github.io/fcu-news-dashboard/student-share.html" target="_blank" rel="noopener noreferrer">
+        <i class="ti ti-heart"></i> 學生愛分享儀表板
+      </a>
+    </div>
+  </div>
+  <div class="sb-body" id="sb-body"></div>
+</div>
+<div class="sb-overlay" id="sb-overlay"></div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <button class="hb-btn" id="hb-btn" aria-label="開啟選單"><i class="ti ti-menu-2"></i></button>
+    <i class="ti ti-chart-bar" style="font-size:13px;color:#C8102E;"></i>
+    已評估 <strong id="tb-evaled">0</strong> 個學系 ／ 共 <strong id="tb-total">0</strong> 個學系
+    <span class="tb-bar"><span class="tb-bar-f" id="tb-bar-f" style="width:0%;display:block;"></span></span>
+    <span style="margin:0 4px;">｜</span>
+    平均分數 <strong id="tb-avg">—</strong>
+    <span class="legend-note" style="margin-left:auto;font-size:11px;">
+      🟢≥80優良 &nbsp; 🔵70–79良好 &nbsp; 🟡60–69待改善 &nbsp; 🔴＜60急需補強 &nbsp; ⬜待評估
+    </span>
+  </div>
+  <div class="mn" id="mn">
+    <div class="empty">
+      <i class="ti ti-arrow-left"></i>
+      請從左側選擇學系
+    </div>
+  </div>
+</div>
+
+</div><!-- /layout -->
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════ */
+const DIMS = [
+  {id:'d6', name:'學系特色與核心內容完整度', max:20},
+  {id:'d1', name:'文案轉譯品質',             max:20},
+  {id:'d2', name:'圖像品質與關連性',         max:20},
+  {id:'d3', name:'內容深度、連結與任務完成度', max:15},
+  {id:'d4', name:'圖文適配與閱讀',           max:10},
+  {id:'d5', name:'新聞資訊即時性',           max:8},
+  {id:'d7', name:'技術健康度（404+SEO）',    max:7},
+];
+
+const DEPTS = [
+/* ── 工程與科學學院 ── */
+{
+  id:'inde', college:'工程與科學學院',
+  name:'工業工程與系統管理學系',
+  url:'https://inde.fcu.edu.tw/', eval_date:'2026-07-11（評分標準 v5.0 七項目子項表）', evaluated:true,
+  overall:67, d1:14, d2:12, d3:11, d4:6, d5:7, d6:12, d7:5,
+  pages:[
+    {name:'首頁',      url:'https://inde.fcu.edu.tw/',                          score:68, d1:16,d2:16,d3:9,d4:8,d5:5,d6:14,
+     notes:'Hero 圖為真實學生互動照，明亮清晰、與工工「團隊合作」本質相符，每張圖均有連結，活動日期（2026.06.18–08.17、07.23）均未過期。主要扣分：Hero 輪播僅 2 則，低於標準下限 3 則。建議從現成新聞素材（FAIM 國際研討會、TITAN 設計銀獎）再製 1–2 張輪播圖並連結至新聞內頁。'},
+    {name:'招生',      url:'https://inde.fcu.edu.tw/admissions/',               score:61, d1:12,d2:14,d3:11,d4:8,d5:3,d6:13,
+     notes:'畢業出路、薪資流向調查（學士 4.1 萬／碩士 6.2 萬）數字具體，是招生說服力亮點。學士班／碩博士班招生、書審指引、ColleGo 均有「了解更多」連結。⚠️ v4.1 新發現：頁面底部「學長姐求學經驗談」區塊只有標題、內容完全空白，直接接 footer——請補上 1–2 則具名心得，或暫時下架整個區塊。另建議把 FAIM 研討會與工工年會兩則長文縮短為摘要＋連結，釋出版面聚焦招生資訊。'},
+    {name:'學士班招生',url:'https://inde.fcu.edu.tw/admissions_undergraduate/', score:63, d1:11,d2:15,d3:13,d4:8,d5:3,d6:13,
+     notes:'招生管道按本國生（4 管道）／僑港澳生（4 管道）／國際生（2 管道）分列，每個管道均有連結，且連結網址路徑全數不含數字，完全符合新標準。加分項。改善方向：補充「系友去哪了？」區塊，列出代表性就職企業與升學比例，回應家長最關心的出路問題。'},
+    {name:'碩博班招生',url:'https://inde.fcu.edu.tw/admissions_graduate/',      score:56, d1:11,d2:14,d3:10,d4:8,d5:2,d6:11,
+     notes:'頁面以學制規定與修課要求為主，對潛在研究生的吸引力不足。建議補充：①指導教授研究方向簡介（連結師資頁）；②近三年畢業生論文題目範例；③在職碩士生彈性修課說明。'},
+    {name:'學士專業',  url:'https://inde.fcu.edu.tw/undergraduate/',            score:61, d1:15,d2:16,d3:9,d4:8,d5:0,d6:13,
+     notes:'課程設計、獎助學金結構完整，「踏出最棒的第一步」開場文案佳。兩個扣分點：①課程僅列名稱（工程經濟、資料庫設計、製造程序等），無單一課程介紹連結，僅有一個指向全校課程檢索系統的總連結，不符「課程要有連結」標準；②獎學金區出現「中華工程教育學會(IEET)所認列之必修科目」等計畫書式措辭。建議為 3–5 門核心課程建立白話介紹頁，並改寫獎學金條文為表格式白話說明。'},
+    {name:'碩博士專業',url:'https://inde.fcu.edu.tw/graduate/',                 score:57, d1:15,d2:13,d3:10,d4:8,d5:0,d6:11,
+     notes:'文字淺顯（「我們擁有最好的師資與豐沛的研發能量」），有課程地圖與課程檢索兩個連結，方向正確。但整頁僅 2 組標題+內容，資訊量過少、版面偏空，研究領域（智慧製造、資料科學、最佳化、永續系統、人因工程）僅一行帶過。建議每個研究領域擴充為一張卡片：一句白話說明＋代表教授＋連結。'},
+    {name:'師資',      url:'https://inde.fcu.edu.tw/teachers/',                 score:61, d1:16,d2:11,d3:12,d4:9,d5:0,d6:13,
+     notes:'⚠️ 每位教師均有照片與「More」連結，符合基本標準；但照片品質嚴重不一：多數為攝影棚灰底專業照，至少一位教師照片為室內生活快照、裁切過緊致頭頂被切、解析度偏低，風格與整排嚴重脫節（新標準裁切檢核項）。立即改善：請該教師補拍，或以現有活動照重新裁切（頭部完整、構圖比照其他教師），今天後台即可替換。'},
+    {name:'產研',      url:'https://inde.fcu.edu.tw/research-project/',         score:46, d1:9,d2:13,d3:6,d4:8,d5:2,d6:8,
+     notes:'⚠️ 六個研究案例（工具機組裝、平行機台排程、手術室排程、驗收抽樣、疫情物流、風電場最佳化）題目本身精彩，但全部匿名——只寫「與產業界密切合作」，完全看不出老師與哪家企業合作，不符新標準「要能看得出學系老師和企業的合作」。且所有案例純文字、無任何深度連結。建議：獲授權案例揭露企業名稱，每案例加「成果摘要」連結頁。'},
+    {name:'特色實驗室',url:'https://inde.fcu.edu.tw/lab/',                      score:40, d1:8,d2:11,d3:6,d4:8,d5:0,d6:7,
+     notes:'⚠️ 全站最低分。工科院學系依新標準必須有特色實驗室，本頁雖存在但僅介紹一間（Karakuri 實作道場），無「了解更多」連結，說明文字偏教科書式（精實管理術語未轉譯）。改善：①補充其他實驗室（名稱＋介紹，這是標準最低要求）；②Karakuri 說明白話化（例：「用最少零件完成機械動作的日本工藝，我們用它教工廠節能設計」）；③補學生實作照。'},
+    {name:'消息總覽',  url:'https://inde.fcu.edu.tw/release/',                  score:66, d1:14,d2:15,d3:11,d4:8,d5:6,d6:12,
+     notes:'分類（學術活動／招生資訊／競賽得獎）清楚，更新頻率正常。優化建議：消息標題提煉亮點數字（「獲 IEEE 國際競賽第一名」優於「參加競賽成績優異」），提升點擊率。'},
+    {name:'校園新聞',  url:'https://inde.fcu.edu.tw/news/',                     score:69, d1:14,d2:16,d3:11,d4:8,d5:7,d6:13,
+     notes:'符合新標準「近半年要有新聞」：最新一則 2026.06.24（距健檢日 15 天），近半年共 4 則（06.24 頒證典禮、05.20 教師升等、04.09 TITAN 銀獎、03.16 MUSE 設計大獎），每則均有連結。建議維持每月至少 1 則的節奏，5–6 月間隔略長，可將 FAIM 研討會拆成系列報導填補空檔。'},
+    {name:'關於/綜覽', url:'https://inde.fcu.edu.tw/overview/',                 score:50, d1:12,d2:9,d3:8,d4:8,d5:3,d6:10,
+     notes:'⚠️ 圖像得分全站最低。頁面核心位置使用年代久遠的師生大合照，「人物時代感太重」是新標準明定扣分項，對首次造訪的高中生與家長留下過時印象。立即可做：替換為近 3 年活動精選照（畢業典禮、業界參訪、競賽頒獎）。文案建議加入量化數字（師資人數、實驗室數、國際合作校數）。'},
+    {name:'歡迎',      url:'https://inde.fcu.edu.tw/welcome/',                  score:68, d1:19,d2:14,d3:10,d4:9,d5:0,d6:16,
+     notes:'「勇敢踏出第一步，尋找不一樣的自己」＋ IE 重新詮釋為 Integrating Expert ＋具體數字（50% 升學）——文案仍是全站最佳範本。本次健檢發現缺口：頁面沒有系主任本人照片，只有文字署名，親和力打折（歡迎頁為新標準必備頁面，系主任影像是信任感關鍵）。立即改善：補一張系主任半身照；並在文末加「預約參觀／聯絡信箱」行動出口。'},
+  ],
+  highlights:[
+    '「歡迎」頁文案全站最佳：具體數字（50%升學）＋ IE=Integrating Expert 品牌再詮釋',
+    '首頁 Hero 為真實學生互動照，明亮清晰，活動日期均未過期',
+    '招生管道分列完整（本國／僑港澳／國際／碩博），15 條招生連結全數符合白名單',
+    '單位新聞近半年 4 則且全為 2025-08-01 後發布的真新聞（非活動/公告），即時性佳',
+    '系統掃描 59 條站內連結（含下一層），真實 404 為 0；三任務測試（找簡章／找課程／找聯絡方式）全數在合格點擊數內完成',
+  ],
+  pain_points:[
+    '招生頁「學長姐求學經驗談」只有標題、內容完全空白（標題下方直接接 footer），出路檢核之具名系友案例掛零',
+    '出路資訊只有產業類別（電子業、半導體業），無任何具名企業或升學學校',
+    'SEO 節錄文字嚴重失修：首頁 description 停留在「111學年度」（4 年前），學士專業／師資／招生頁 description 全空白',
+    '師資頁至少一位教師照片裁切至頭部、風格與其他攝影棚照嚴重脫節（新標準裁切檢核）',
+    '首頁 Hero 輪播僅 2 則，低於標準下限 3 則',
+    '特色實驗室僅 1 間（工科院必備項目），且無深度連結、文字偏教科書式',
+    '產研六案例全部匿名，看不出與哪家企業合作，且無任何深度連結',
+    '歡迎頁缺系主任本人照片，僅文字署名',
+    '綜覽頁沿用年代久遠大合照（人物時代感過重）',
+    '學士專業課程僅列名稱、無單一課程連結（僅全校課程檢索總連結）；碩博士專業頁僅 2 組內容，版面過空',
+  ],
+  quick_fixes:[
+    '處理招生頁空白的「學長姐求學經驗談」區塊：有內容就補上（1–2 則具名心得），暫時沒有就先把整個區塊下架，空標題比沒有更傷',
+    '更新首頁 SEO description（現為 4 年前的「111學年度」），並為學士專業／師資／招生頁補上節錄文字，後台各頁 SEO 欄位填寫即可',
+    '更換師資頁裁切異常的教師照片（頭頂被切、風格脫節），以活動照重裁即可',
+  ]
+},
+{
+  id:'mse', college:'工程與科學學院', name:'材料科學與工程學系',
+  url:'https://mse.fcu.edu.tw/', eval_date:'2026-07-11（評分標準 v5.0 七項目子項表）', evaluated:true,
+  overall:73, d1:15, d2:11, d3:12, d4:6, d5:7, d6:16, d7:6,
+  pages:[
+    {name:'首頁',        url:'https://mse.fcu.edu.tw/',                   score:69, d1:14,d2:15,d3:11,d4:8,d5:6,d6:15,
+     notes:'特色輪播內容紮實（師資國際化、教研實驗室、CDIO、國際移動力、研究成果五大主題）且各有連結。活動日期均未過期。特色辨識度佳：ESI 前 1%、三個具名研究中心、產學金額 6.5 億等專屬敘述充足。改善：首頁未見出路／就業數據入口，建議加一張「畢業去哪了」卡片連往系友會頁。'},
+    {name:'招生',        url:'https://mse.fcu.edu.tw/apply/',             score:64, d1:13,d2:14,d3:13,d4:8,d5:4,d6:12,
+     notes:'學士（特殊選才／繁星／申請／考試）、碩博（甄試／考試）、境外生（僑港澳／外國／大陸）管道分列清楚，9 條招生連結全數符合白名單，且設有「學習Q&A你問我答」補充區塊——結構是三系中最佳。缺口：無出路數據、無具名企業、無系友案例，家長端說服力素材缺席；建議把系友會頁的陳姿鈞（世界先進副總）案例摘要放進招生頁。'},
+    {name:'學士專業',    url:'https://mse.fcu.edu.tw/professional/',      score:59, d1:12,d2:14,d3:11,d4:8,d5:0,d6:14,
+     notes:'三大課程方向（微奈米電子元件與智慧感測／高性能合金與積層製造／再生能源材料與永續發展）定位清楚且有「了解更多」連結。扣分：文字偏計畫書風格（CDIO、深碗專題等術語未白話化），且無任何學生作品或成果照片。建議每個方向補一句「學這個能做什麼工作」與一張學生實作照。'},
+    {name:'課程設計與規劃', url:'https://mse.fcu.edu.tw/course/',         score:60, d1:13,d2:13,d3:12,d4:8,d5:0,d6:14,
+     notes:'設有課程頁與課程地圖（course-map）雙入口，SEO description 有填寫（優於多數學系）。建議：課程地圖若能像工工系以金字塔圖呈現四年路徑，對高中生理解幫助更大；核心課程可挑 3–5 門加白話說明。'},
+    {name:'師資',        url:'https://mse.fcu.edu.tw/faculty/',           score:63, d1:15,d2:13,d3:13,d4:9,d5:0,d6:13,
+     notes:'每位教師有翻卡式卡片＋「More」連結，研究專長以中文白話列出（鍍膜技術／表面工程等，無難懂縮寫），分類篩選（講座／特聘／專任…）完善。照片由系統動態載入，本次工具無法逐一目檢裁切與風格一致性——列入待人工複核項目，請小編自行檢查每張照片頭部完整、風格統一。'},
+    {name:'產學與研究',  url:'https://mse.fcu.edu.tw/research/',          score:66, d1:15,d2:14,d3:13,d4:8,d5:0,d6:16,
+     notes:'全站最強頁面之一：三個研究領域文字屬淺顯推廣型、三個具名研究中心（電漿科技／薄膜暨量測／材料研究）各有獨立連結、6 間教研實驗室均可點入，並有 ESI 前 1%、產學金額 6.5 億等量化佐證。改善：企業合作僅寫「台中榮總、中科、多家大型企業」，建議具名 2–3 家代表企業。'},
+    {name:'教研實驗室',  url:'https://mse.fcu.edu.tw/experiment/',        score:55, d1:11,d2:12,d3:12,d4:8,d5:0,d6:12,
+     notes:'6 間實驗室（先進光學鍍膜／先進多元合金／奈米材料與電子陶瓷／微電能／光能元件與薄膜／電子材料）全部具名且各有外部連結（Weebly／Google Sites／Wix），數量充足。但頁面本身只有名稱列表——無介紹文字、無照片、無負責教師，四要素僅得一，訪客必須逐一點外站才知道內容。建議在本頁為每間實驗室加 2–3 句白話介紹＋一張設備照＋負責教師姓名。'},
+    {name:'單位新聞',    url:'https://mse.fcu.edu.tw/news/',              score:70, d1:14,d2:15,d3:12,d4:8,d5:7,d6:14,
+     notes:'符合標準：近半年單位新聞 3 則（2026.05.22 世界粉體工程會議、03.22、03.01），最新距健檢日約 7 週，內容全為「已發生事件＋成果」的真新聞（競賽獲獎、國際研討會發表、海外實習成果），無活動預告或公告混入。建議維持每 1–2 個月至少 1 則的節奏。'},
+    {name:'消息總覽',    url:'https://mse.fcu.edu.tw/release/',           score:67, d1:13,d2:14,d3:12,d4:8,d5:7,d6:13,
+     notes:'消息分類完整（校園活動／校園新聞／學生愛分享／校園公告），更新正常。建議：標題提煉具體亮點數字提高點擊率。'},
+    {name:'系友會',      url:'https://mse.fcu.edu.tw/alumni/',            score:65, d1:14,d2:13,d3:11,d4:8,d5:3,d6:16,
+     notes:'三系中唯一有具名系友案例的頁面：陳姿鈞（世界先進積體電路全球業務及規劃副總經理）等，並有畢業生規模數據（大學部 3,274 人／碩士 609 人）。這是招生說服力的金礦，但埋在「關於＞系友會」深處，高中生和家長不會主動找到。建議：把 1–2 則系友案例複製到招生頁與首頁。頁面內容日期多停在 2021–2023，宜更新近年系友動態。'},
+    {name:'歡迎',        url:'https://mse.fcu.edu.tw/welcome/',           score:62, d1:16,d2:12,d3:11,d4:9,d5:0,d6:14,
+     notes:'系主任葉丞豪「材料科技是各種先進工業的航母」比喻生動，媒體報導區連結台積電 2 奈米議題、借力使力聰明。兩個缺口：①無系主任本人照片；②全文無任何具體數字（就業率、升學率、證照）。建議補照片＋把系友會頁的畢業生數據引用進來。'},
+  ],
+  highlights:[
+    '產學與研究頁三個具名研究中心＋6 間具名實驗室均有連結，ESI 前 1%、產學 6.5 億量化佐證充足',
+    '招生頁管道分列＋學習Q&A，9 條招生連結全數符合白名單',
+    '系友會頁有具名系友案例（陳姿鈞／世界先進副總）＋畢業生規模數據——三系唯一',
+    '單位新聞近半年 3 則全為真新聞，最新距今約 7 週',
+    '多數專業頁有填 SEO description（優於工工、機電）',
+  ],
+  pain_points:[
+    '教研實驗室頁只有名稱列表：無介紹、無照片、無負責教師，內容全靠外站',
+    '系友案例與畢業生數據埋在「關於＞系友會」，招生頁與首頁完全沒有引用',
+    '歡迎頁無系主任照片、全文無數字佐證',
+    '學士專業頁計畫書風格術語（CDIO、深碗專題）未白話化，無學生作品照片',
+    '首頁／招生／師資頁 SEO description 空白（專業頁反而有填，補齊即可）',
+    '師資照片為動態載入，裁切與風格一致性待人工複核',
+    '全站無就業率／薪資等出路數據（工工系有薪資調查可參考做法）',
+  ],
+  quick_fixes:[
+    '把系友會頁的陳姿鈞案例與畢業生數據，各複製一份到招生頁和歡迎頁——素材現成，只是放錯位置',
+    '教研實驗室頁為 6 間實驗室各補 2–3 句白話介紹＋負責教師姓名（先不用照片也行）',
+    '補首頁／招生／師資頁的 SEO description（後台各頁欄位填寫即可）',
+  ]
+},
+{
+  id:'mcae', college:'工程與科學學院', name:'機械與電腦輔助工程學系',
+  url:'https://mcae.fcu.edu.tw/', eval_date:'2026-07-11（評分標準 v5.0 七項目子項表）', evaluated:true,
+  overall:54, d1:13, d2:10, d3:10, d4:6, d5:1, d6:11, d7:3,
+  pages:[
+    {name:'首頁',       url:'https://mcae.fcu.edu.tw/',           score:61, d1:14,d2:13,d3:9,d4:8,d5:3,d6:14,
+     notes:'首頁實際有兩個獨立輪播區塊，經比對原始碼修正如下：①最上方主 Hero banner（5 張），則數在 3–6 合規範圍內，但 5 張中有 4 張連結指向 2023 年（如 mcaenews20231122）與 2025 年 3 月的舊新聞，只有 1 張（校慶 63 週年）屬常態內容，內容過期問題確實存在，只是發生在 Hero 而非另一區塊；②再往下的「亮點成果」卡片輪播（5 張）則放了「2020 Moldex3D 全球模流達人賽」「聯聚建設盃籃球賽」等已 5–6 年未汰換的舊活動，「CDIO創新教學」「優質學習環境／實驗場域」「產／學／硏合一」三張文案尚可。建議兩區塊都比照校慶／教授獲獎等近期成果更新，Hero 應優先處理（訪客第一眼看到的位置）。'},
+    {name:'招生',       url:'https://mcae.fcu.edu.tw/apply/',     score:61, d1:14,d2:13,d3:13,d4:8,d5:2,d6:11,
+     notes:'管道分類為三系中最完整：本國生（繁星／個人申請／考試分發／四技二專甄選／技優甄審／特殊選才／寒暑假轉學生）、境外生（僑港澳兩梯次／海外聯招）共 9 條連結，逐一核對全數符合逢甲招生系統白名單。缺口：①「歷年大學申請入學書審準備重點指引」最新僅列到 111 學年度，資訊停滯超過 3 年未更新；②無出路數據、無具名企業、無系友案例——家長端說服力素材缺席（歡迎頁其實有系友基金會等素材，建議搬一部分過來）。'},
+    {name:'學士專業',   url:'https://mcae.fcu.edu.tw/undergraduate/', score:68, d1:17,d2:13,d3:13,d4:8,d5:0,d6:17,
+     notes:'✅ 全站（含 inde／mse）目前文案轉譯品質最佳頁面：「先進模造技術與實務操作」「智慧感測與工業聯網實務」「虛實整合－3D列印技術」「機器人導論」等 4 門特色課程，每門都有具體、白話、可想像應用場景的說明文字（如 3D 列印課直接點出「評估商業案例導入 3D 列印後優於傳統製程的轉型模式」），不是空泛形容詞。另有「第二主修／輔修」跨領域學制清楚呈現。唯一缺口：全頁無學生作品或實作照片佐證，建議每門課補一張學生實作照。'},
+    {name:'師資',       url:'https://mcae.fcu.edu.tw/faculty/',   score:56, d1:13,d2:11,d3:12,d4:8,d5:0,d6:12,
+     notes:'採翻卡式卡片＋「More」連結，結構與工工、材料系一致，12 位教師均有連結可查詳細資料。因照片為前端動態載入（bgStyle 綁定），本次系統性掃描無法逐一目檢每張照片的裁切與風格一致性，**列為待人工複核項目**——請小編自行檢查是否有裁切至頭部或風格與其他教師明顯不一致的照片（工工、材料系健檢均發現此問題，機電系不排除同樣風險）。'},
+    {name:'產學與研究', url:'https://mcae.fcu.edu.tw/research/',  score:56, d1:13,d2:12,d3:11,d4:8,d5:0,d6:12,
+     notes:'導覽下設「重點研究／產學合作／研究中心／重點實驗室／智慧製造人才培育計畫共享教材」五個子分類，架構完整。本次以連結結構與首頁輪播為主要依據，頁面逐段內文未及深入截取比對，**產學合作是否具名列出合作企業無法在此次確認**，建議系上自行複核該區塊是否有具體企業名稱（比照材料系研究中心具名 ESI／產學金額 6.5 億的做法）。'},
+    {name:'環境',       url:'https://mcae.fcu.edu.tw/environment/', score:49, d1:11,d2:11,d3:10,d4:7,d5:0,d6:10,
+     notes:'⚠️ 因深度爬取範圍限制，本次未能完整確認頁面是否具備實驗室四要素（名稱＋研究主題白話說明＋設備或實作照片＋負責教師）。工科院依 v4.1 標準每系至少須有 2 間完整呈現的特色實驗室，此為**待確認風險項目**，建議列入下次複評優先項目，或由系上提供頁面截圖供進一步確認。'},
+    {name:'歡迎',       url:'https://mcae.fcu.edu.tw/greeting/',  score:60, d1:17,d2:10,d3:10,d4:8,d5:0,d6:15,
+     notes:'系主任的話「因為我們年輕，所以一無所有；也正因為年輕，我們擁有一切」開場有記憶點。五段式介紹（機電專業虛實整合、智慧機械數位轉型、創新教學跨域發展、系友資源豐沛畢業即就業、機電家族快樂學習）具體且有量化與具名佐證：系友「超過 1 萬人」、具名「楊學周機械基金會」與北中南三區系友會，優於多數學系的空泛敘述。缺口：確認**無系主任本人照片**（頁面僅有系徽與 IEET 標章圖），建議補一張系主任照片，文案已經是強項，補照片即可大幅提升信任感。'},
+    {name:'單位新聞',   url:'https://mcae.fcu.edu.tw/news-list/', score:44, d1:10,d2:12,d3:8,d4:7,d5:1,d6:6,
+     notes:'⚠️ 全站最嚴重發現：近 3 個月「單位新聞」分類下約 14 則項目中，**僅 1 則實質與本系相關**（周至宏教授獲國際人工智慧科學院 AAIS Fellow——他是本系講座教授），其餘約 13 則為全校性「逢甲精選」公關稿（Apple 競賽、國科會計畫、畢業典禮、黃仁勳直播同樂會、Cheers 辦學績效排名、渢妙離岸風場 MOU 等），與機械與電腦輔助工程學系內容無直接關聯，卻被歸入本系新聞版位。更明確違反 v4.1 新規則的是：「2026 預見逢甲吸引逾4千人」一則本身被標記為「校園活動」分類、而非新聞，屬於典型的「活動非新聞」案例，不應計入新聞則數。建議與網管確認單位新聞 feed 的過濾邏輯，避免全校性公關稿覆蓋掉系上真正的新聞版位，讓訪客誤以為本系近期唯一動態只有一位教授獲獎。'},
+    {name:'消息總覽',   url:'https://mcae.fcu.edu.tw/release/',   score:53, d1:12,d2:12,d3:10,d4:7,d5:2,d6:10,
+     notes:'分類架構完整（校園活動／校園新聞／學生愛分享／校園公告／60周年系慶），60 周年系慶作為系上重要品牌活動值得保留並持續更新素材。即時性扣分原因與「單位新聞」頁相同——內容重疊且真正系上動態稀少。'},
+  ],
+  highlights:[
+    '學士專業頁 4 門特色課程說明全站白話等級最佳，具體到「能用來做什麼」而非空泛形容詞',
+    '招生管道涵蓋最完整（含四技二專五種管道），9 條招生連結全數符合白名單',
+    '歡迎頁具名系友基金會（楊學周機械基金會）＋北中南三區系友會＋系友規模逾 1 萬人',
+    '第二主修／輔修等跨領域學制清楚呈現',
+    '60 周年系慶為具延展潛力的品牌活動素材',
+  ],
+  pain_points:[
+    '【重大】單位新聞近 3 個月約 14 則中僅 1 則與本系真正相關，其餘為全校性公關稿；其中 1 則更被標記為「活動」而非新聞，直接違反 v4.1 新聞認定規則',
+    '首頁主 Hero banner（5張）有4張連結指向2023／2025年舊新聞；下方「亮點成果」輪播另含2020年「Moldex3D」等5–6年未汰換的舊活動，兩區塊皆需更新',
+    '歡迎頁確認無系主任本人照片',
+    '招生頁「歷年書審重點指引」最新僅到 111 學年度，資訊停滯超過 3 年',
+    'SEO description 全站近乎空白（首頁、招生、師資、研究、環境、歡迎、新聞、消息等頁全數留空）',
+    '環境／實驗室頁內容深度未能確認是否達四要素標準，須人工複核',
+    '全站未見具體出路數據（就業率／薪資），僅有系友規模籠統敘述',
+    '英文版新聞列表頁連結 404：https://mcae.fcu.edu.tw/en/news-list/',
+    '產學合作頁是否具名列出合作企業，本次未及確認，須系上自行複核',
+  ],
+  quick_fixes:[
+    '盤點單位新聞 feed 設定，優先移除或重新分類非本系新聞，並將「2026預見逢甲開放日」等活動性質內容移出新聞分類',
+    '更新首頁主 Hero banner（優先）：撤下連結 2023／2025 年舊新聞的 4 張圖，換上周至宏教授獲 AAIS Fellow 等近期成果；其次處理「亮點成果」輪播中的 2020 年舊項目',
+    '為首頁、招生、師資等主要頁面補上 SEO description（後台欄位填寫即可，今天可完成）',
+  ]
+},
+{
+  id:'fcm', college:'工程與科學學院', name:'纖維與複合材料學系',
+  url:'https://fcm.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:67, d1:14, d2:11, d3:13, d4:6, d5:5, d6:13, d7:5,
+  highlights:[
+    '「歷屆傑出校友」頁有 16 位具名系友案例（姓名＋現職＋成就描述，如陳華清、馬文清等），是本次全案例目前最豐富的具名系友素材，只是埋在深層頁面沒被利用',
+    '全國唯一在纖維與複合材料領域建置學士／碩士／博士完整學制，系主任具名（邱長塤）並具體佐證「7千餘位校友」「民國53年成立」',
+    '環境頁 10 間實驗室皆具名＋介紹文字＋負責教師（如廖盛焜教授、邱長塤教授），符合項目一實驗室四要素中的三項',
+    '招生頁依學士／碩博士＋本國／境外生四象限分類，16 個管道連結全數符合白名單',
+    '站內連結掃描 0 個 404',
+  ],
+  pain_points:[
+    '單位新聞近半年（2026-01-15後）僅 1 則，其餘集中在 2024–2025，即時性明顯不足',
+    '「歷屆傑出校友」16 則案例均無照片，且未與招生頁／首頁串接，訪客不易發現',
+    '產研頁「研究中心」「重點實驗室」等 4 個子分類全部連到同一網址、無實質展開內容，企業合作未具名（僅「與纖複系簽約產學聯盟企業約30家」，無名單）',
+    '環境頁 10 間實驗室缺照片（四要素中僅缺這一項）',
+    '碩博士專業頁文字偏計畫書風格（「培養學生獨立思考與解決問題能力」等機構目標式陳述）',
+    '系主任歡迎頁無照片；成員頁也未附系主任照片',
+    '首頁 SEO description 留空',
+    '圖像品質與手機版呈現本次以文字擷取工具為主，未完整視覺稽核，待人工複核',
+  ],
+  quick_fixes:[
+    '把「歷屆傑出校友」頁 2–3 則具名案例搬到招生頁或首頁，這是現成且優質的素材，只是放錯位置',
+    '更新單位新聞，確保近3個月內至少有1則',
+    '產研頁的「重點實驗室」比照環境頁已有的 10 間實驗室資料重新連結，避免同頁四個分類互相導向同一空內容',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://fcm.fcu.edu.tw/',
+     notes:'「學系特色」「加入逢甲纖複系」等區塊均有連結，符合項目四原則。惟首頁可見的相簿／新聞多為舊聞，建議優先更新首頁素材。'},
+    {name:'招生／apply（含學士／碩博士、本國／境外生四象限）', url:'https://fcm.fcu.edu.tw/apply/',
+     notes:'項目四B：16個招生連結全數符合白名單，四象限分類清楚。缺口：無招生Q&A或歷年入學資訊等補充組件。'},
+    {name:'學士專業／undergraduate', url:'https://fcm.fcu.edu.tw/undergraduate/',
+     notes:'項目一核心課程：有「課程地圖」連結可深入了解，文字部分白話（「自由選、自主搭」）部分計畫書風格。缺口：無學生作品或成果照片佐證。'},
+    {name:'碩博士專業／graduate', url:'https://fcm.fcu.edu.tw/graduate/',
+     notes:'有「了解更多」連結至完整課程頁，但整體文字（「培養學生獨立思考與解決問題能力」）屬機構目標式陳述，項目二文案轉譯扣分主因。僅3組標題內容，資訊量偏少。'},
+    {name:'師資／faculty', url:'https://fcm.fcu.edu.tw/faculty/',
+     notes:'⚠️ 項目三：每位教師均有「More」連結，但本次判讀未見教師照片（與工工、材料系常見的裁切問題不同，此站疑似整體缺照片），建議人工複核確認並優先補齊。研究專長用詞（如「三次元編織工學」）對高中生／家長略顯專業，可加白話括注。'},
+    {name:'產研／research（含重點研究、產學合作、研究中心、重點實驗室）', url:'https://fcm.fcu.edu.tw/research/',
+     notes:'⚠️ 項目一、四：導覽下 4 個子分類（重點研究／產學合作／研究中心／重點實驗室）全部指向同一網址且未展開，只有 1 段系所研究領域概述（發熱衣、醫療用膚料、碳纖維）。企業合作未具名。這與「環境」頁已具名的 10 間實驗室資料重複但未串接，建議整合。'},
+    {name:'生活－系學會／sa', url:'https://fcm.fcu.edu.tw/sa/',
+     notes:'項目五：簡介文字＋社群媒體連結（FB／IG／Line）齊全，但活動內容與相簿均未展開實質內容，屬於較單薄的頁面。'},
+    {name:'生活－企業實習／internship', url:'https://fcm.fcu.edu.tw/internship/',
+     notes:'項目一出路資訊：提及「與纖複系簽約產學聯盟企業約30家」但未具名；「經驗談」區塊描述學長姐分享機制，但無實際心得或照片內容，屬於「說有但看不到」的典型缺口。'},
+    {name:'生活－歷屆傑出校友', url:'https://fcm.fcu.edu.tw/%e6%ad%b7%e5%b1%86%e5%82%91%e5%87%ba%e6%a0%a1%e5%8f%8b/',
+     notes:'✅ 全案例目前最佳出路資訊素材：16位具名系友（姓名＋現職＋心得，如「科技領航 學研殊榮」主題式介紹），符合項目一「具名系友案例」子項。缺口：無照片、無量化就業數據（僅「16位系友獲傑出校友，佔1/10強」的榮譽比例，非就業率）。強烈建議把這頁內容分流到招生頁與首頁，目前完全沒有被引用。'},
+    {name:'新聞與活動－消息總覽／release', url:'https://fcm.fcu.edu.tw/release/',
+     notes:'項目六：分類架構完整（校園新聞／校園活動／學生愛分享／校園公告），新聞與活動雖同頁呈現但有標籤區隔，不算「活動冒充新聞」。最新素材到 2026.07（申請截止日期），惟為活動性質。'},
+    {name:'新聞與活動－單位新聞／news', url:'https://fcm.fcu.edu.tw/news/',
+     notes:'⚠️ 項目六：近半年（2026-01-15後）僅1則（「紡織產業名人講堂」2026.06.10），其餘5則集中在2024–2025，即時性明顯不足，是本系最大扣分項之一。內容性質本身正確（研究成果、系慶、產業應用皆屬真新聞，非活動/公告冒充）。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://fcm.fcu.edu.tw/announcements-list/',
+     notes:'內容單純為行政公告（如「115年暑期上班時間」），不計入新聞則數，符合項目六「公告不算新聞」原則，最新到 2026.06.30。'},
+    {name:'關於－歡迎／greeting（系主任的話）', url:'https://fcm.fcu.edu.tw/greeting/',
+     notes:'項目二：系主任邱長塤具名，「勇敢踏出第一步，成就獨一無二的自己」開場有吸引力，且點出「全國唯一完整學制」「7千餘位校友」「民國53年成立」等專屬事實。缺口：無系主任照片。'},
+    {name:'關於－綜覽／about', url:'https://fcm.fcu.edu.tw/about/',
+     notes:'項目一：僅簡短標題與教育目標列述，缺系所發展沿革等正文，也缺具體數字（師資人數、創立年份、學生規模）。圖片僅系徽，無法判斷是否有過期舊照問題（因為根本沒放實景照片）。'},
+    {name:'關於－環境／environment', url:'https://fcm.fcu.edu.tw/environment/',
+     notes:'✅ 項目一實驗室要素：10間教師個人研究實驗室皆具名（如「纖維染整實驗室」「複合材料結構與製程實驗室」）＋簡要說明＋負責教師（廖盛焜教授、邱長塤教授等），四要素中三項到位，全案例數一數二完整。唯一缺口：無實驗室照片。'},
+    {name:'關於－成員／staff', url:'https://fcm.fcu.edu.tw/staff/',
+     notes:'僅系主任聯絡資訊＋系辦地址電話，無系主任照片，也無完整行政團隊人員清單或照片。'},
+  ]
+},
+{
+  id:'che', college:'工程與科學學院', name:'化學工程學系',
+  url:'https://che.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:65, d1:14, d2:11, d3:14, d4:6, d5:6, d6:9, d7:5,
+  highlights:[
+    '首頁 Hero 輪播（6張）與長卡片輪播（6張）連結全數正常，涵蓋招生、榮譽、國際交流、系慶等多元主題',
+    '獎助學金頁最紮實：6項獎學金皆有具體金額（3萬／5萬／2萬／1萬）與申請時程，是本次全案例目前最具體的財務資訊頁',
+    '國際交流成效頁有具體合作校（日本山口大學、關西大學，馬來西亞拉曼大學）與110-113學年度學生出席國際研討會的詳細數據表',
+    '招生頁 15 個招生連結全數符合白名單，且有歷年書審指引（112-114學年度）',
+    '站內連結掃描 0 個 404',
+  ],
+  pain_points:[
+    '⚠️ 產研頁「特色實驗室」「各實驗室介紹」兩個標題區塊完全空白，無任何內容；「榮譽獲獎」頁同樣只有「教師榮譽」「學生榮譽」標題、無實際得獎案例——兩頁皆為模板骨架未填內容',
+    '⚠️ 「學生愛分享」頁顯示的是經濟系、材料系、資訊系、行銷系、機電系等其他系學生的心得，找不到化工系自己學生的分享，可能是全校共用元件配置錯誤',
+    '「國際接軌」（/global/）頁完全空洞，僅3個標題無內容，需點擊連往另一個「國際交流成效」頁才有實質資料，兩頁高度重疊建議整合',
+    '系友鏈結（50週年）頁無具名系友案例、無照片、無出路數據，僅宣傳性標語',
+    '系主任歡迎文字缺乏具體數字佐證，也無照片',
+    '環境頁實驗室雖具名＋列負責教師，但無照片與詳細介紹文字',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '產研頁「特色實驗室」「榮譽獲獎」頁優先填入內容，這是本次發現最明顯的「有骨架沒內容」個案，比其他系的缺照片問題更基礎',
+    '確認「學生愛分享」頁的內容來源設定，修正為顯示化工系自己學生的分享',
+    '把國際交流成效頁的具體數據（合作校、研討會參與）摘要搬一段到系主任歡迎頁或首頁',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://che.fcu.edu.tw/',
+     notes:'項目四：Hero 輪播（6張，含2026twiche.tw外部連結、about、undergraduate、news文章、study-abroad、honor）與下方長卡片輪播（6張：about、scholarship、internship、global、50anniversary、undergraduate）逐張核對皆有真實連結，無缺連結問題。項目七 SEO description 留空。'},
+    {name:'招生／apply（學士/碩博士×本國/境外生）', url:'https://che.fcu.edu.tw/apply/',
+     notes:'項目四B：15個管道連結全數符合白名單，另有112-114學年度歷年書審指引可查閱，管道與補充資訊完整。'},
+    {name:'學士專業／undergraduate', url:'https://che.fcu.edu.tw/undergraduate/',
+     notes:'項目一：有課程「了解更多」連結、台積電半導體學程專章，是特色亮點。缺口：無學生作品或成果照片，僅有「終端課程專題競賽成果」連結而非直接展示。'},
+    {name:'碩博士專業／graduate', url:'https://che.fcu.edu.tw/graduate/',
+     notes:'項目一：課程地圖與課程檢索雙連結到位，文字偏宣傳語氣（「深化專業知識與解決問題之能力」），較不像計畫書，是三系（工工/材料/化工）中文案品質較好的碩博士頁之一。'},
+    {name:'碩士班課程先修生／qa_graduate', url:'https://che.fcu.edu.tw/qa_graduate/',
+     notes:'內容極度單薄，僅一句宣傳文案「先修生 利多大放送」加聯絡資訊，無實質先修規定說明，建議補充具體先修課程清單或流程。'},
+    {name:'產研／research', url:'https://che.fcu.edu.tw/research/',
+     notes:'🚩項目一：「特色實驗室」與「各實驗室介紹」兩個標題區塊完全空白無內容，是本次目前發現最明確的「模板未填」案例。研究領域雖分四類但企業合作未具名。僅3個外部安全法規連結，缺乏指向具體實驗室或研究成果的深度連結。'},
+    {name:'師資／teachers', url:'https://che.fcu.edu.tw/teachers/',
+     notes:'每位教師均有「More」連結，多數列出研究專長（少數特約講座教師未列）。教師照片本次未能確認是否存在，待人工複核。'},
+    {name:'生活－系學會／sa', url:'https://che.fcu.edu.tw/sa/',
+     notes:'簡介文字＋IG連結（@fcuche_112）齊全，但「系學會活動」「系學會介紹」標題下無具體內容展開。'},
+    {name:'生活－企業實習與參訪／internship', url:'https://che.fcu.edu.tw/internship/',
+     notes:'項目一出路資訊：具名4家合作企業（中油、台積電、矽品、興農）＋3個具體參訪地點，優於多數系的匿名描述，但仍缺實習學生心得與照片。'},
+    {name:'新聞與活動－消息總覽／release', url:'https://che.fcu.edu.tw/release/',
+     notes:'項目六：四大分類（校園新聞／校園活動／學生愛分享／校園公告）架構清楚，新聞與活動有標籤區隔，非混雜冒充。最新到2026.06.29。'},
+    {name:'新聞與活動－系所新聞／news', url:'https://che.fcu.edu.tw/news/',
+     notes:'項目六：近半年（01-15後）5則，內容多為真新聞（國際交流、教學成果、師資升等），僅1則（教師升等公告2026.01.13）性質偏公告已排除計算，即時性尚可。'},
+    {name:'新聞與活動－校園活動／events-list', url:'https://che.fcu.edu.tw/events-list/',
+     notes:'依演講/課程/競賽、國際交流、招生活動等分類篩選，最新活動排到2026年9月，屬正常活動性質，不冒充新聞。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://che.fcu.edu.tw/share-list/',
+     notes:'🚩本頁列出至少7則具名學生心得，但姓名旁標註的系所是「經濟系」「材料系」「資訊系」「行銷系」「機電系」——完全不是化工系學生，疑似全校共用元件抓取錯誤或設定有誤，建議請網管檢查此頁的資料來源篩選條件。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://che.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質（競賽徵選、獎學金申請、學會獎章），不計入新聞則數，符合項目六原則，最新到2026.06.29。'},
+    {name:'關於－歡迎／greeting（系主任的話）', url:'https://che.fcu.edu.tw/greeting/',
+     notes:'系主任曾怡享具名，「化學工程涵蓋食衣住行育樂各面向」點出半導體、光電、化學原料、醫藥開發等職涯方向。缺口：無具體數字、無照片。'},
+    {name:'關於－綜覽／about', url:'https://che.fcu.edu.tw/about/',
+     notes:'僅標題「扎實的工程教育 培育優質的化工人才」，缺系所介紹正文與量化數字（師資人數、建系年份、學生規模）。'},
+    {name:'關於－成員／staff', url:'https://che.fcu.edu.tw/staff/',
+     notes:'僅系主任聯絡資訊，無照片，也無完整行政團隊清單。'},
+    {name:'關於－榮譽獲獎／honor', url:'https://che.fcu.edu.tw/honor/',
+     notes:'🚩僅「教師榮譽」「學生榮譽」兩個空白標題，無任何實際得獎案例、姓名或年度，與產研頁「特色實驗室」同為本次發現的模板未填典型案例，建議優先補內容或考慮暫時下架此導覽項目。'},
+    {name:'關於－環境／environment', url:'https://che.fcu.edu.tw/environment/',
+     notes:'項目一：實驗室具名並列出負責教師（如「林志韋 助理教授 永續碳解方與碳排實驗室」），約12+組內容（含第2頁）。缺口：無照片、無詳細介紹文字，僅關鍵詞標籤。'},
+    {name:'關於－國際交流成效／study-abroad', url:'https://che.fcu.edu.tw/study-abroad/',
+     notes:'✅ 本次全案例目前最詳實的國際化數據頁：具名合作校（日本山口大學、關西大學，馬來西亞拉曼大學）＋110-113學年度學生出席國際研討會姓名/會議/日期/地點的完整表格，APEC YES Challenge競賽佳績。建議把重點數字摘要搬到首頁或歡迎頁強化曝光。'},
+    {name:'關於－系友鏈結／50anniversary', url:'https://che.fcu.edu.tw/50anniversary/',
+     notes:'僅「優秀系友 引領前行」宣傳標語與系慶影片提及，無具名系友案例、無照片、無出路數據，是項目一出路資訊子項的主要缺口來源。'},
+    {name:'（首頁長卡片提及）獎助學金／scholarship', url:'https://che.fcu.edu.tw/scholarship/',
+     notes:'✅ 6項獎學金皆有具體金額（3萬／5萬／2萬／1萬元不等）與申請時程，是本次全案例中數一數二具體的財務資訊頁，可作為其他系的範本。'},
+    {name:'（首頁長卡片提及）國際接軌／global', url:'https://che.fcu.edu.tw/global/',
+     notes:'僅「國際認證」「國際交流」「學生分享」3個空白標題，無實質內容，需點擊另一個「國際交流成效」頁才有資料，兩頁功能重疊、內容分布不合理，建議整合為一頁。'},
+  ]
+},
+{
+  id:'apmath', college:'工程與科學學院', name:'應用數學與資料科學學系',
+  url:'https://apmath.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:56, d1:10, d2:9, d3:10, d4:6, d5:3, d6:11, d7:7,
+  highlights:[
+    '競賽成果頁（/result/contest/）10則具名得獎案例（如「賴又禎、康博勛、林姵妘」2025全國智慧製造大數據分析競賽優等獎），含學生姓名、獎項、年度，是本次少見的紮實出路佐證',
+    '學士專業碩士出路明確銜接數據科學碩士學位學程（ds.fcu.edu.tw，已另案評分），跨系所升學路徑清楚',
+    '招生頁6個管道連結全數符合白名單',
+    '站內連結掃描 0 個 404',
+  ],
+  pain_points:[
+    '⚠️ 校園新聞近半年（2026-01-15後）0則！最新一則2025.12.11已超過7個月，是本次目前發現即時性最差的頁面',
+    '⚠️ 首頁 Hero 輪播4張圖片連結中，2則指向2024年的舊新聞文章（20241110、www.fcu.edu.tw/news/2024112101等），與新聞頁的停滯問題相互印證，首頁維護長期停滯',
+    '「環境」頁與「labs（實驗室）」頁內容高度重疊，皆圍繞「應數系專業電腦教室」單一主題，缺乏真正的多元實驗室介紹',
+    '學生專題成果頁（/result/project/）11個專題案例完全沒有學生姓名，與同院競賽成果頁的具名做法不一致',
+    '系主任歡迎文字未署名，缺具體數字，也無照片',
+    '國際交流頁（/international/）完全空洞，僅系辦聯絡資訊，無合作校或交流數據',
+    '證照頁提及多項證照類別但無通過率或人數統計',
+  ],
+  quick_fixes:[
+    '優先更新首頁 Hero 輪播與校園新聞——這是本次至今發現最嚴重的即時性問題，2024年舊聞還掛在首頁',
+    '把「學生專題成果」頁比照「競賽成果」頁補上學生姓名，兩頁做法不一致，容易讓人以為系上不重視專題成果',
+    '整併「環境」與「labs」兩頁重複的電腦教室介紹，若無其他實驗室可整合為一頁',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://apmath.fcu.edu.tw/',
+     notes:'⚠️項目四A／六：Hero輪播（6張）中有4張連結指向2024年新聞（含2篇www.fcu.edu.tw舊聞、1篇2024/11/10系內新聞），僅2張（undergraduate、labs）為常態頁面，過期比例偏高。長卡片輪播（result/project、result/contest、證照、international、undergraduate）連結正常。'},
+    {name:'招生／apply', url:'https://apmath.fcu.edu.tw/apply/',
+     notes:'項目四B：本國生／境外生分列，各3個管道共6個連結全數符合白名單。缺口：無招生Q&A。'},
+    {name:'學士專業／undergraduate', url:'https://apmath.fcu.edu.tw/undergraduate/',
+     notes:'項目一：課程僅文字概述（數學理論＋資訊／數據科學／AI／財金／計算科學），無課程名稱清單或連結，文字偏計畫書語氣（「以職場需求為導向」）。「碩士班課程先修生」與「影音分享」區塊內容未展開。'},
+    {name:'師資／teachers', url:'https://apmath.fcu.edu.tw/teachers/',
+     notes:'每位教師均有「More」連結與研究專長列出（12組，分3頁），但本次判讀未見教師照片，待人工複核確認。'},
+    {name:'系學會／departmental_society', url:'https://apmath.fcu.edu.tw/departmental_society/',
+     notes:'僅簡介標語與聯絡資訊＋FB/IG連結，無具體活動介紹或照片。'},
+    {name:'labs（實驗室）', url:'https://apmath.fcu.edu.tw/labs/',
+     notes:'⚠️ 頁面標題為「應數系專業電腦教室」，實質內容其實是系所整體介紹而非個別實驗室介紹，無負責教師具名、無照片，不符合項目一「實驗室四要素」標準，且與「環境」頁內容重複。'},
+    {name:'環境／environment', url:'https://apmath.fcu.edu.tw/environment/',
+     notes:'⚠️ 內容（美麗校園智慧學習、理學大樓改善、應數系專業電腦教室）與 labs 頁重疊，未見多元實驗室介紹，建議整合為一頁並補充實際研究空間資訊。'},
+    {name:'綜覽／overview', url:'https://apmath.fcu.edu.tw/overview/',
+     notes:'項目一：教育目標與五項核心能力列述完整，但缺量化數字（師資人數、成立年份、學生規模），也缺實景照片，僅系徽與裝飾圖案。'},
+    {name:'成員／staff', url:'https://apmath.fcu.edu.tw/staff/',
+     notes:'僅系主任黃同瑤聯絡資訊與學經歷，無照片。'},
+    {name:'校園新聞／news', url:'https://apmath.fcu.edu.tw/news/',
+     notes:'🚩項目六：近半年（2026-01-15後）0則，最新一則「應用數學系學生勇奪2025全國智慧製造大數據分析競賽優等獎」（2025.12.11）已逾7個月，是本次目前發現最嚴重的新聞停滯案例。'},
+    {name:'校園活動／events-list', url:'https://apmath.fcu.edu.tw/events-list/',
+     notes:'正常活動性質（NVIDIA工作坊、TA選拔、出國研修申請），最新排到2026年9月，分類清楚不冒充新聞。'},
+    {name:'校園公告／announcements-list', url:'https://apmath.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質（暑期上班時間），最新2026.06.30，符合項目六「公告不算新聞」原則。'},
+    {name:'歡迎（主任的話）／welcome', url:'https://apmath.fcu.edu.tw/welcome/',
+     notes:'內容具吸引力且介紹數據分析／AI／財金等課程方向，但**未署名**、無數字佐證、無照片，是本次少數「連署名都沒有」的個案之一。'},
+    {name:'學生專題成果／result/project', url:'https://apmath.fcu.edu.tw/result/project/',
+     notes:'11個專題案例（如「美國消費者物價指數之回溯測試」「互動式AI數學家教」），主題多元但**全部沒有學生姓名**，與同系競賽成果頁的具名做法不一致，建議統一補上。'},
+    {name:'競賽成果／result/contest', url:'https://apmath.fcu.edu.tw/result/contest/',
+     notes:'✅ 項目一亮點佐證典範：10則具名得獎案例（姓名＋獎項＋年度，涵蓋2021-2025年），是本次全案例目前最紮實的出路資訊素材之一，建議把代表性案例搬到首頁或招生頁強化曝光。'},
+    {name:'證照／證照', url:'https://apmath.fcu.edu.tw/%e8%ad%89%e7%85%a7/',
+     notes:'說明系上提供題庫平台與證照獎勵措施，涵蓋資訊、產險、壽險、品管、精算、投資分析等類別，但無通過率或人數統計佐證成效。'},
+    {name:'國際交流／international', url:'https://apmath.fcu.edu.tw/international/',
+     notes:'⚠️ 頁面幾乎空洞，僅系辦聯絡資訊與導覽連結，無合作校名單、交流人數或學生心得，是本次出路／特色資訊最薄弱的頁面之一。'},
+  ]
+},
+{
+  id:'aero', college:'工程與科學學院', name:'航太與系統工程學系',
+  url:'https://aero.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:67, d1:15, d2:11, d3:9, d4:6, d5:7, d6:14, d7:5,
+  highlights:[
+    '⚠️（已修正）新聞即時性其實良好：校園新聞近半年至少6則，最新一則2026.06.15距健檢日僅約1個月，先前「約8個月」的判斷有誤，已更正',
+    '系主任具名（張淵仁），以「火車頭工業」比喻具吸引力，且有具體數字（64年成立、學士年招100餘人、碩士20餘人、91學年成立博士學程）',
+    '「學生愛分享」頁確認皆為航太系本系學生（歐晉華、賴心榆等），標註正確，與化工系的錯置問題不同',
+    '教研環境頁 5 間實驗室皆具名（飛機及發動機、電腦輔助工程、控制與機電系統、結構、風洞）',
+    '站內連結掃描 0 個 404',
+  ],
+  pain_points:[
+    '⚠️ 招生頁（/admission/）內容存在，但均未連往校級 recurit_list 白名單系統，改連 www.fcu.edu.tw/apply/（校級總覽頁）與 webadmi.fcu.edu.tw 的個別公告頁（不同網域）——已查證此非「完全找不到入口」，但不符合白名單逐管道比對標準，與會計系為同類型個案',
+    '學士專業、碩士專業兩頁內容極薄（各僅1-2段文字），完全沒有課程清單或課程連結，是本次目前發現「項目一核心課程」子項最弱的個案之一',
+    '系友會頁僅1位具名系友（理事長），出路資訊仍薄弱',
+    '產研頁提及「12間重點實驗室」但未逐一具名或介紹，與教研環境頁的5間實驗室數字不一致，需釐清',
+    '企業實習頁無具名合作企業、無學生心得',
+    '系主任無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '確認招生頁應連往哪個正式入口，統一導向校級 recurit_list 系統的個別管道頁',
+    '學士／碩士專業頁補上具體課程清單與連結，這是本次全案例中最單薄的專業頁面之一',
+    '釐清產研頁「12間重點實驗室」與環境頁「5間實驗室」的數字落差，統一呈現',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://aero.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（2張）與長卡片輪播（10張新聞）逐一核對皆有連結，且多為2025年較新新聞（10月、9月等），僅少數2024年舊聞。首頁本身連結完整性佳。'},
+    {name:'招生／admission（學士班/碩士班）', url:'https://aero.fcu.edu.tw/admission/',
+     notes:'項目四B：連結全部指向 www.fcu.edu.tw/apply/ 總覽頁與 webadmi.fcu.edu.tw 個別網址，未見 recurit_list 白名單連結，無法逐管道比對合規性。'},
+    {name:'學士專業／undergraduate', url:'https://aero.fcu.edu.tw/undergraduate/',
+     notes:'⚠️ 項目一：全頁僅2組內容（標題文字＋聯絡資訊），完全沒有課程清單或連結，是本次至今發現內容最單薄的學士專業頁。文字「人類因夢想而偉大」有感染力但缺實質課程資訊。'},
+    {name:'碩士專業／graduate', url:'https://aero.fcu.edu.tw/graduate/',
+     notes:'⚠️ 同樣僅2組內容，無課程介紹或連結，「鏈結教學研究與產業需求脈動」為願景式文字，非具體課程說明。'},
+    {name:'碩士班課程先修生／accelerated-bachelors-masters-program', url:'https://aero.fcu.edu.tw/accelerated-bachelors-masters-program/',
+     notes:'制度說明具體（可抵免2/3碩士學分、全額/半額助學金），並附3個外部行政連結，是本次同類頁面中較完整的一份。'},
+    {name:'師資／teachers', url:'https://aero.fcu.edu.tw/teachers/',
+     notes:'11組教師資料（講座/特約講座/特聘/專任教授等）皆有「More」連結與研究專長，但本次判讀未見教師照片，待人工複核。'},
+    {name:'產研／industrial-coop-and-research', url:'https://aero.fcu.edu.tw/industrial-coop-and-research/',
+     notes:'僅為導覽概述頁，提及「12間重點實驗室」但未具名或介紹，企業合作亦未具名，四個子連結（研究中心/實驗室/研究/產學合作）點入後內容不詳。'},
+    {name:'生活－系學會／departmental-society', url:'https://aero.fcu.edu.tw/departmental-society/',
+     notes:'「愛搞飛機的一群人」標語生動，但活動內容與照片皆未展開，僅FB連結與聯絡資訊。'},
+    {name:'生活－企業實習／internship', url:'https://aero.fcu.edu.tw/internship/',
+     notes:'區分大學部「7+1」／碩士「3+1」實習制度說明清楚，但企業實習頁常見的「無具名企業、無學生心得」問題同樣存在。'},
+    {name:'新聞與活動－消息總覽／release', url:'https://aero.fcu.edu.tw/release/',
+     notes:'分類架構完整。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://aero.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則（黑客松、NASA太空人講座、競賽、系友會助學金等），最新2026.06.15距健檢日約1個月，即時性佳，先前誤判為8個月已修正。內容涵蓋新聞、活動、公告混合但有版位區隔。'},
+    {name:'新聞與活動－校園活動／events-list', url:'https://aero.fcu.edu.tw/events-list/',
+     notes:'活動性質正常，最新排到2026年8-9月，分類清楚。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://aero.fcu.edu.tw/share-list/',
+     notes:'✅ 已查證皆為航太系本系學生（歐晉華、賴心榆、周子崴、那凱捷等），標註正確，與化工系錯置他系內容的問題不同，是好案例。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://aero.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質（暑期上班時間、行事曆），符合項目六「公告不算新聞」原則。'},
+    {name:'關於－歡迎（主任的話）／welcome', url:'https://aero.fcu.edu.tw/welcome/',
+     notes:'系主任張淵仁具名，「火車頭工業」比喻生動，64年成立／學士100+人／碩士20+人／91學年博士班等數字具體，是本院文案品質前段班。缺口：無照片。'},
+    {name:'關於－綜覽／overview', url:'https://aero.fcu.edu.tw/overview/',
+     notes:'有系所簡介正文與量化數字（招生規模、成立年份），優於多數系綜覽頁只有標題的狀況，但仍缺實景照片。'},
+    {name:'關於－IEET專區／educational-objectives-core-competencies', url:'https://aero.fcu.edu.tw/educational-objectives-core-competencies/',
+     notes:'（結構性列為導覽項目，內容為教育目標與核心能力條列，屬認證用途頁面，未深入評估文案品質）'},
+    {name:'關於－教研環境／environment', url:'https://aero.fcu.edu.tw/environment/',
+     notes:'項目一：5間實驗室具名（飛機及發動機、電腦輔助工程、控制與機電系統、結構、風洞），但缺照片、缺負責教師標示、缺詳細介紹文字，四要素僅一項到位。'},
+    {name:'關於－系友會／aero-alumni', url:'https://aero.fcu.edu.tw/aero-alumni/',
+     notes:'僅1位具名系友（理事長李家慶，現職2家公司董事長），無心得、無照片。「社團成員900多位」是唯一量化資訊但非出路數據。'},
+    {name:'關於－成員／member', url:'https://aero.fcu.edu.tw/member/',
+     notes:'系主任張淵仁聯絡資訊與學經歷完整，但無照片。'},
+    {name:'（首頁輪播提及）CDIO／cdio', url:'https://aero.fcu.edu.tw/cdio/',
+     notes:'CDIO教育框架說明完整（新鮮人專題→深碗專題→Capstone畢業專題三層架構），以UAV設計製造為主題，但無具體完成案例或學生作品成果佐證。'},
+  ]
+},
+{
+  id:'ees', college:'工程與科學學院', name:'環境工程與科學學系',
+  url:'https://ees.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:72, d1:13, d2:11, d3:13, d4:6, d5:8, d6:15, d7:6,
+  highlights:[
+    '本次全案例實驗室資料最豐富：特色實驗室頁 13 間具名實驗室連結＋環境頁另有 12 位教授專業實驗室簡介（如林秋裕「生物氫能研究室」），數量遠超其他系',
+    '✅ 校園新聞近半年至少9則，最新距健檢日僅約5週，即時性全案例前段班',
+    '「學生愛分享」頁確認皆為環科系本系學生（廖苑茵、林佳佑、梁玉霞等），標註正確',
+    '全院招生連結最完整：學士班＋碩士班分開設頁，共 17 個管道連結全數符合白名單',
+    '首頁與招生頁均有填寫 SEO description，全案例少數之一',
+  ],
+  pain_points:[
+    '系主任歡迎文字未署名',
+    '「環境」頁（12位教授實驗室簡介）與「特色實驗室」頁（13間具名連結）內容高度重疊，未整合，訪客需在兩頁間比對才能拼湊完整實驗室資訊',
+    '系友專區僅有理監事名單、無現職與心得，出路資訊仍缺具名案例佐證',
+    '研究亮點頁完全沒有具體案例（無教師/學生姓名、無成果描述），僅籠統帶過',
+    '國際移動頁資訊零散（提及吉林大學等但無完整合作校清單、無交流人數、無學生心得）',
+    '圖像與手機版呈現待人工複核',
+  ],
+  quick_fixes:[
+    '整合「環境」與「特色實驗室」兩頁重複的實驗室資訊，統一呈現名稱＋簡介＋照片＋負責教師',
+    '歡迎頁補上系主任姓名',
+    '研究亮點頁補至少2-3則具名教師/學生研究成果案例',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://ees.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（10張，含YouTube影片、環保署電子報、中央社新聞連結等多元外部素材）與長卡片輪播（5張）逐一核對皆有連結，來源多元不只系內新聞，是本次目前發現Hero內容最豐富的個案。'},
+    {name:'招生（學士）／apply-undergraduate', url:'https://ees.fcu.edu.tw/apply-undergraduate/',
+     notes:'項目四B：13個管道連結全數符合白名單，含轉學生等較少見管道，是本次全案例管道涵蓋最完整的頁面之一。'},
+    {name:'招生（碩士）／apply-master', url:'https://ees.fcu.edu.tw/apply-master/',
+     notes:'項目四B：4個碩士管道全數合規。學／碩分開設頁做法值得其他系參考。'},
+    {name:'學士專業／undergraduate', url:'https://ees.fcu.edu.tw/undergraduate/',
+     notes:'項目一：有課程地圖連結，但僅列研究領域無具體課程名稱，文字偏計畫書語氣，無學生作品或成果照片。'},
+    {name:'碩博士專業／master', url:'https://ees.fcu.edu.tw/master/',
+     notes:'項目一：課程地圖＋課程檢索雙連結到位，文字條列清楚（優於學士專業頁），是本院碩士專業頁文案較好的個案之一。'},
+    {name:'產研－研究領域／research-fields', url:'https://ees.fcu.edu.tw/research-fields/',
+     notes:'16位教師研究專長分類完整，但企業合作未具名（僅泛稱科技部/環保署/中科等機構），僅提及「產學合作金額高達數千萬元」缺具體案例。'},
+    {name:'產研－研究亮點／research-highlights', url:'https://ees.fcu.edu.tw/research-highlights/',
+     notes:'⚠️ 完全沒有具體研究成果案例、無教師或學生姓名，僅籠統描述「教師研究成果豐碩」，是項目一亮點佐證子項的明顯缺口。'},
+    {name:'產研－特色實驗室／research_lab', url:'https://ees.fcu.edu.tw/research_lab/',
+     notes:'✅ 13間實驗室具名（如環境生物技術與分子生態實驗室），但僅列名稱連結，無介紹文字、照片、負責教師標示於本頁（需點入子頁查看）。'},
+    {name:'師資／teachers', url:'https://ees.fcu.edu.tw/teachers/',
+     notes:'教師均有「More」連結，研究專長列出，但無教師照片，待人工複核確認。'},
+    {name:'生活－系學會／sa', url:'https://ees.fcu.edu.tw/sa/',
+     notes:'僅勵志標語與111/113/114學年度系學會子連結，具體活動內容未展開。'},
+    {name:'生活－企業實習／internship', url:'https://ees.fcu.edu.tw/internship/',
+     notes:'提及「菁英實習廠商(近五年)」但未列名單，有「實習分享」YouTube影片連結但頁面本身無文字心得。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://ees.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，內容多為真新聞（校級榮譽、國際認證、教學成果），即時性全案例前段班。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://ees.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質（暑期上班時間），符合項目六原則。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://ees.fcu.edu.tw/share-list/',
+     notes:'✅ 已查證皆為環科系本系學生（廖苑茵、林佳佑、梁玉霞等），分四大類別（國際移動/社團成長/跨域學習/企業實習），標註正確。'},
+    {name:'關於－歡迎（系主任的話）／greeting', url:'https://ees.fcu.edu.tw/greeting/',
+     notes:'「歡迎每位對綠色永續環境有使命的學生」有願景性，且有校友規模數字（2000+/3000+畢業生），但**未署名**，也無照片。'},
+    {name:'關於－綜覽／about', url:'https://ees.fcu.edu.tw/about/',
+     notes:'提及「全國第一個通過IEET認證環境工程領域課程」與40年歷史，但正文簡短，缺其他量化數字（師資人數、學生規模），圖片僅系徽。'},
+    {name:'關於－環境／environment', url:'https://ees.fcu.edu.tw/environment/',
+     notes:'✅ 12位教授專業實驗室簡介（如「生物氫能研究室」含生物氫能源/水質工程/厭氧醱酵等關鍵詞），與特色實驗室頁內容重疊但呈現方式不同，建議整合。'},
+    {name:'關於－成員／staff', url:'https://ees.fcu.edu.tw/staff/',
+     notes:'（結構性列為導覽項目，內容為系辦與系主任聯絡資訊，本次未見照片）'},
+    {name:'關於－系友專區／friends', url:'https://ees.fcu.edu.tw/friends/',
+     notes:'⚠️ 僅系友會理監事名單（米孝萱、朱玫瑰等），無現職、無心得、無照片，出路描述僅泛稱「政府部門、學術研究單位、工程顧問公司」，缺具體數據。'},
+    {name:'關於－IEET專區／ees-ieet', url:'https://ees.fcu.edu.tw/ees-ieet/',
+     notes:'（認證用途頁面，未深入評估文案品質）'},
+    {name:'（首頁長卡片提及）國際移動／global-mobility', url:'https://ees.fcu.edu.tw/global-mobility/',
+     notes:'提及吉林大學姊妹校、越南交流、日本大榮環境合作，但資訊零散不完整（無交流人數、無完整合作校清單、無學生心得或照片）。'},
+    {name:'（首頁長卡片提及）topics-in-environment', url:'https://ees.fcu.edu.tw/topics-in-environment/',
+     notes:'（結構性列為長卡片輪播項目，內容主題與環境相關，本次未深入查核）'},
+  ]
+},
+{
+  id:'photonics', college:'工程與科學學院', name:'光電通訊與工程學系',
+  url:'https://photonics.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:73, d1:15, d2:11, d3:11, d4:6, d5:8, d6:16, d7:6,
+  highlights:[
+    '綜覽頁有具體規模數字：大學部466人、碩士班49人，師資配置（特約講座7人、特聘3人、教授7人）具體到位，是本次少見的量化系所規模資訊',
+    '產學合作頁具名企業：2025年與鴻準精密工業CTT簽署產學聯盟共建光機電技術聯合研究實驗室',
+    '系主任具名（林碩泰）＋畢業系友逾千人＋17屆學士／22屆碩士＋114學年通過6年期程認證',
+    '✅ 校園新聞近半年至少9則，即時性全案例前段班',
+    '招生頁 12 個管道連結全數符合白名單',
+  ],
+  pain_points:[
+    '🚩「學生愛分享」頁再次發現他系學生內容錯置（經濟系、材料系、資訊系、行銷系、機電系），與化工系同樣問題——這是本次第2個確認案例，疑似全校共用元件的系統性設定錯誤，建議統一向網管反映而非逐系個別修正',
+    '產研頁「重點實驗室」（6間）與教研環境頁（約12間）內容重疊但呈現方式不同，皆缺照片與詳細介紹文字',
+    '產學合作、企業實習兩頁皆未列出完整合作企業清單（僅提及鴻準1家具名案例）',
+    '系主任無照片',
+    '出路資訊缺具名系友案例（20周年系慶頁提及330+人出席但無個別案例）',
+  ],
+  quick_fixes:[
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（已是第2個系發現同樣問題，建議一次性全校排查）',
+    '補系主任照片',
+    '整合重點實驗室與教研環境兩頁的重複內容',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://photonics.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（7張，含台積電careers網站、中央社新聞外部連結）與長卡片輪播（5張）逐一核對皆有連結，來源多元。首頁有填 SEO description。'},
+    {name:'招生／admissions（學士/碩士×本國/境外生）', url:'https://photonics.fcu.edu.tw/admissions/',
+     notes:'項目四B：12個管道連結全數符合白名單，涵蓋國際生多元管道，缺招生Q&A獨立呈現（實際上導覽有/qa/頁，本頁未整合連結）。'},
+    {name:'學士專業／undergraduate-studies', url:'https://photonics.fcu.edu.tw/undergraduate-studies/',
+     notes:'項目一：課程檢索與課程配當連結到位，含台積電半導體學程亮點，但文字偏計畫書語氣，無學生作品或成果照片。'},
+    {name:'碩士專業／graduate-studies', url:'https://photonics.fcu.edu.tw/graduate-studies/',
+     notes:'項目一：課程配當＋課程檢索雙連結，5類課程與4項獎助學金分類清楚，但同樣缺具體課程說明白話化。'},
+    {name:'特色領域／feature（含6個技術子頁）', url:'https://photonics.fcu.edu.tw/feature/',
+     notes:'六大特色領域（電腦全像3D顯示、光學鍍膜、光學設計、光電半導體與矽光子、光纖與無線光通訊、先進雷射加工）各含應用/原理/課程三部分，架構完整，但缺具體研究成果、學生作品或專利案例佐證。'},
+    {name:'師資／faculty', url:'https://photonics.fcu.edu.tw/faculty/',
+     notes:'教師均有「More」連結，但本次判讀未見教師照片，待人工複核。'},
+    {name:'產研／research', url:'https://photonics.fcu.edu.tw/research/',
+     notes:'6間重點實驗室具名（光電元件、光電模擬、光學元件與薄膜、LED光電、四維度影像、雷射加工）但僅列名稱無介紹；企業合作未在本頁具名（具名資訊在產學合作子頁）。'},
+    {name:'產研－產學合作／industry-academia-cooperation', url:'https://photonics.fcu.edu.tw/industry-academia-cooperation/',
+     notes:'✅ 標題提及具名企業「2025年與鴻準精密工業CTT簽署產學聯盟」，是本次少見的具名合作案例，但頁面本身僅這1個標題式案例、無完整合作廠商清單。'},
+    {name:'生活－企業實習／corporate-internships', url:'https://photonics.fcu.edu.tw/corporate-internships/',
+     notes:'僅「企業參訪活動」概念說明，無具體合作廠商清單、無學生心得或照片。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://photonics.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，涵蓋校級榮譽、畢典、國際趨勢等，即時性佳。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://photonics.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質（暑期上班時間、行事曆），符合項目六原則。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://photonics.fcu.edu.tw/share-list/',
+     notes:'🚩已查證顯示的是經濟系、材料系、資訊系、行銷系、機電系等他系學生心得，非光電系本系學生，與化工系同樣的資料來源錯置問題，是本次第2次確認的案例。',
+    },
+    {name:'關於－歡迎（系主任的話）／greeting', url:'https://photonics.fcu.edu.tw/greeting/',
+     notes:'系主任林碩泰具名，「畢業系友逾千人」「17屆學士／22屆碩士」「114學年通過6年期程認證」皆為具體數字，是本次全案例文案品質數一數二的頁面。缺口：無主任照片。'},
+    {name:'關於－綜覽／overview', url:'https://photonics.fcu.edu.tw/overview/',
+     notes:'✅ 項目一：有具體規模數字（大學部466人、碩士班49人、師資配置：特約講座7人/特聘3人/教授7人），是本次全案例中系所規模數字最完整的綜覽頁，唯獨缺實景照片。'},
+    {name:'關於－教研環境／environment', url:'https://photonics.fcu.edu.tw/environment/',
+     notes:'約12間實驗室（顯示應用、光電薄膜技術、全像等）有較詳細的研究方向描述，與「重點實驗室」頁（6間精選）內容重疊但不完全相同，屬於「總覽版」與「精選版」並存的架構。'},
+    {name:'關於－20周年系慶／pho20thanniversary', url:'https://photonics.fcu.edu.tw/pho20thanniversary/',
+     notes:'2024年系慶活動吸引330+系友參與，是具體數字佐證，但無個別具名系友案例，僅提供專刊下載連結，出路資訊仍需另外查找。'},
+  ]
+},
+{
+  id:'psd', college:'工程與科學學院', name:'精密系統設計學士學位學程',
+  url:'https://psd.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:64, d1:11, d2:12, d3:12, d4:6, d5:8, d6:11, d7:4,
+  highlights:[
+    '產研頁「產學合作」具名約30家上市櫃企業（永進機械、志聖工業、和大工業等），是本次全案例目前具名企業數量最多的頁面',
+    '與台積電合作推出「智慧製造」學分學程專頁，是具體產學亮點',
+    '環境頁實驗室具名到教師層級（劉育成「結構與應用聲學實驗室」、蔡鈺鼎「賜昌鞋履智慧製造實驗室」），優於「產研」頁本身（重點實驗室僅標題無內容）',
+    '✅ 校園新聞近半年至少8則，最新距健檢日約1個月，即時性佳',
+    '招生頁 8 個管道連結全數符合白名單',
+  ],
+  pain_points:[
+    '主任的話未署名，但已從「學程主任·行政人員」頁查到姓名為蔡鈺鼎，建議把歡迎頁也具名',
+    '「產研」頁的重點實驗室與重點研究僅標題無內容，需靠「環境」頁才看得到實際實驗室資訊，兩頁分工不合理',
+    '學生專題頁（/project/）僅1個案例展示、無學生姓名、無照片，與「產學合作」頁30家具名企業的豐富度反差很大',
+    '企業實習頁「學長姐實習心得分享」標題下無實際內容',
+    '出路資訊仍缺具名系友案例',
+    '校園公告最新僅到2026.04.09，較新聞頁（2026.06.10）更新頻率低',
+  ],
+  quick_fixes:[
+    '歡迎頁補上主任蔡鈺鼎的具名署名（資料其實已存在於「學程主任·行政人員」頁，只是沒有串接過去）',
+    '把「產學合作」頁的具名企業與「環境」頁的具名實驗室資訊整合到「產研」頁，避免訪客要跳兩三個頁面才拼湊得出完整資訊',
+    '學生專題頁補充更多案例並附上學生姓名',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://psd.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（5張，含2026race、meet2026、2025成果發表等）與長卡片輪播（7張，含meetfcu2024、feature、project、ucan、icap、undergraduate、tsmc-ai-manufacturing）逐一核對皆有連結，中文網址頁面經查證均可正常開啟（非404，先前掃描的假警報已排除）。'},
+    {name:'招生／apply', url:'https://psd.fcu.edu.tw/apply/',
+     notes:'項目四B：一般生（5管道）＋境外生（3管道）共8個連結全數符合白名單。'},
+    {name:'學士專業／undergraduate', url:'https://psd.fcu.edu.tw/undergraduate/',
+     notes:'項目一：課程地圖（Google Drive連結）、必選修科目表、課程檢索三連結到位，文字混合白話與計畫書語氣，無學生作品或成果照片。'},
+    {name:'師資／about/teachers', url:'https://psd.fcu.edu.tw/about/teachers/',
+     notes:'11組教師資料皆有「More」連結，但本次判讀未見教師照片，待人工複核。'},
+    {name:'產研／research', url:'https://psd.fcu.edu.tw/research/',
+     notes:'✅「產學合作」子項具名約30家上市櫃企業（永進機械、志聖工業、和大工業等），是本次全案例最豐富的具名企業清單。⚠️但「重點研究」「重點實驗室」兩子項僅標題、完全無內容，需靠「環境」頁才有實質實驗室資訊，頁面內部分工不合理。'},
+    {name:'生活－企業實習／internship', url:'https://psd.fcu.edu.tw/internship/',
+     notes:'有連結指向產學聯盟名單與學生成就中心，但「學長姐實習心得分享」標題下無實際內容，屬於「掛標題沒填內容」的常見缺口。'},
+    {name:'生活－系學會／sa', url:'https://psd.fcu.edu.tw/sa/',
+     notes:'「專屬精密人的祕密基地」標語有特色，但活動內容與照片未展開，僅社群連結。'},
+    {name:'（首頁長卡片）特色／feature', url:'https://psd.fcu.edu.tw/feature/',
+     notes:'四大特色論述完整（核心信念/特色實踐/創新連結/學生成就），從新鮮人專題到3+2預備研究所計畫架構清楚，但缺量化成果（就業率、獲獎紀錄、產業合作數）佐證。'},
+    {name:'（首頁長卡片）學生專題／project', url:'https://psd.fcu.edu.tw/project/',
+     notes:'⚠️ 僅1個專題案例（「以C# NET.Framework打造節能智慧機電整合系統」），無學生姓名、無照片，與「產學合作」頁的豐富度形成明顯反差，建議優先補充案例數量。'},
+    {name:'（首頁長卡片）tsmc-ai-manufacturing', url:'https://psd.fcu.edu.tw/tsmc-ai-manufacturing/',
+     notes:'與台積電合作「智慧製造」學分學程，是具體產學亮點，但頁面本身「七大亮點」內容未完整展開，建議補足細節。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://psd.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少8則，多為校級新聞（IEET認證、畢典、育成新創、Cheers排名等），即時性佳。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://psd.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質，但最新僅到2026.04.09，更新頻率低於新聞頁。'},
+    {name:'關於本系－歡迎（主任的話）／greeting', url:'https://psd.fcu.edu.tw/greeting/',
+     notes:'「動手作、作中學、學中覺」理念清楚，「大台中精密機械產業黃金縱谷」地緣優勢論述佳，但**未署名**（經查主任為蔡鈺鼎，資料存在別頁只是沒連過來），無數字佐證、無照片。'},
+    {name:'關於本系－學程簡介／overview', url:'https://psd.fcu.edu.tw/overview/',
+     notes:'5項教育目標＋7項核心能力列述完整，但缺量化數字（學生人數、就業率、合作企業數），圖片僅裝飾性元素。'},
+    {name:'關於本系－環境／environment', url:'https://psd.fcu.edu.tw/environment/',
+     notes:'✅ 實驗室具名到教師層級：劉育成「結構與應用聲學實驗室」、蔡鈺鼎「賜昌鞋履智慧製造實驗室」等，加上快速成形打樣實驗室、Autodesk Design Studio等空間，是本次項目一實驗室要素完成度較高的頁面，但仍缺照片。'},
+    {name:'關於本系－學程主任·行政人員／teams', url:'https://psd.fcu.edu.tw/teams/',
+     notes:'學程主任蔡鈺鼎（研究領域：最佳化演算法、AI、機器人控制系統）與行政人員林秋芬聯絡資訊完整，但無照片。此頁資訊應與歡迎頁串接以補足署名缺口。'},
+  ]
+},
+{
+  id:'earmp', college:'工程與科學學院', name:'電聲碩士學位學程',
+  url:'https://earmp.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:64, d1:14, d2:10, d3:9, d4:6, d5:8, d6:13, d7:4,
+  highlights:[
+    '✅「關於」頁有本次全案例最具體的出路量化數據：平均月薪6.1萬元、工作機會增幅24.7%、平均每位求職者1.7個工作機會',
+    '企業實習頁具名3家合作企業（美律實業、迪芬尼聲學科技、佳格數位科技）',
+    '實驗室雖未逐一命名，但具體佐證「全國第一符合ISO3745、ISO7779國際級電聲實驗室」，並列出Brüel & Kjær、SoundCheck、Klippel等國際量測儀器',
+    '✅ 校園新聞近半年至少9則，即時性佳（先前誤判為「無法判定」已修正）',
+    '歡迎文字具體：96學年開始招生、畢業學長姐已逾100人',
+  ],
+  pain_points:[
+    '招生頁本國生僅2個recurit_list連結（甄試入學dr_interview、考試入學mastr_exam），境外生3個連結皆導向 www.fcu.edu.tw/international_admissions/ 綜合頁而非個別管道，與多個系所同樣的「總覽頁替代白名單」問題',
+    '產研頁企業合作未具名（僅稱「科技部、教育部、民營計畫」），出路數據佳但合作單位不具名，兩者反差',
+    '學程主任無照片（蔡鈺鼎，與精密系統設計學士學位學程psd為同一人兼任）',
+    '常見Q&A頁僅顯示分類標籤（認識聲學與生活／學程招生與學習），具體問答內容未在首層呈現',
+    '碩士專業頁文字偏計畫書風格',
+  ],
+  quick_fixes:[
+    '把「關於」頁的出路數據（月薪6.1萬、機會增幅24.7%）搬到首頁或招生頁強化曝光，這是目前最強的招生賣點卻埋在深頁',
+    '確認境外生招生連結是否應改為個別 recurit_list 管道頁',
+    '補學程主任照片',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://earmp.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（8張，含2則系內新聞、研究/about/master頁、2則www.fcu.edu.tw新聞、reurl.cc短連結）與長卡片輪播（實為外部eatd.org實驗室連結＋research/feature頁，先前誤判的#a/#b僅為SVG裝飾圖形內部錨點，非導覽連結）皆有效連結。'},
+    {name:'招生／apply', url:'https://earmp.fcu.edu.tw/apply/',
+     notes:'項目四B：本國生2個recurit_list連結（dr_interview、mastr_exam），境外生3個連結皆為 www.fcu.edu.tw/international_admissions/ 綜合頁，非個別白名單管道，與會計系/航太系同類型個案。'},
+    {name:'碩士專業／master', url:'https://earmp.fcu.edu.tw/master/',
+     notes:'項目一：連結至特色課程與課程設計頁，7組內容涵蓋研究領域4細項與國際交流，但文字偏計畫書語氣（「秉持電聲人才培育...設立宗旨」）。'},
+    {name:'課程設計與規劃／course0322001', url:'https://earmp.fcu.edu.tw/course0322001/',
+     notes:'教育理念三原則清楚，4+1雙學位、雙主修、碩士級輔系等特殊路徑說明具體，但無完整課程清單，需點課程地圖/檢索外部連結查詢。'},
+    {name:'師資／teachers', url:'https://earmp.fcu.edu.tw/teachers/',
+     notes:'10組教師資料（講座、特約講座、特聘、專任教授等）皆有「More」連結，但無教師照片。'},
+    {name:'產研／research', url:'https://earmp.fcu.edu.tw/research/',
+     notes:'實驗室未逐一具名但有具體國際認證佐證（ISO3745/ISO7779）與量測儀器品牌；「電聲產學技術發展與驗證聯盟」有具體歷史（2016年獲科技部績優產學技術聯盟殊榮）；企業合作本身未具名。'},
+    {name:'生活－企業實習／intersship', url:'https://earmp.fcu.edu.tw/intersship/',
+     notes:'✅ 具名3家合作企業（美律實業、迪芬尼聲學科技、佳格數位科技），提及「實習活動照片」但實際照片未在此頁呈現。'},
+    {name:'（首頁輪播提及）特色課程／feature', url:'https://earmp.fcu.edu.tw/feature/',
+     notes:'介紹2門核心課程（電聲AI大數據分析、揚聲器設計與製造專題討論），皆標示授課教師姓名，但無學生成果或案例佐證。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://earmp.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，即時性佳，先前因未直接查證新聞頁而給保守分數，已修正。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://earmp.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質，最新2026.04.09。'},
+    {name:'關於／about（綜覽）', url:'https://earmp.fcu.edu.tw/about/',
+     notes:'✅ 項目一出路資訊本次最佳案例：月薪平均6.1萬元、工作機會增幅24.7%、平均1.7個工作機會/求職者，皆為具體量化數據，遠優於其他系僅有校友規模或校慶參與人數的作法。缺口：無實驗室或師生活動實景照片。'},
+    {name:'成員／staff', url:'https://earmp.fcu.edu.tw/staff/',
+     notes:'學程主任蔡鈺鼎與約聘助理王沛涵聯絡資訊完整，但無照片。（蔡鈺鼎同時也是精密系統設計學士學位學程psd的主任，為跨學程兼任）'},
+    {name:'常見Q&A／qa', url:'https://earmp.fcu.edu.tw/qa/',
+     notes:'分「認識聲學與生活」「學程招生與學習」兩類，但首層僅顯示分類標籤，具體問答內容需再點入，本次未及展開查證。'},
+  ]
+},
+{
+  id:'gest', college:'工程與科學學院', name:'綠色能源科技碩士學位學程',
+  url:'https://gest.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:57, d1:11, d2:10, d3:6, d4:6, d5:8, d6:13, d7:3,
+  highlights:[
+    '✅（大幅修正）教研實驗室頁其實有 8 間具名實驗室，皆列負責教師與研究方向（林秋裕「生物氫能源實驗室」、吳石乙「多相流實驗室」等），先前院級摘要判斷「空洞」是抽樣不足所致',
+    '「全國第一座連續式厭氧生物氫能先導工場」是具體技術亮點',
+    '✅ 校園新聞近半年至少8則，即時性佳',
+    '學程主任身分已查明為呂晃志（原歡迎頁未署名，成員頁有完整資料）',
+  ],
+  pain_points:[
+    '🚩【重要缺失，已複查確認】招生頁（/apply/）與碩士介紹頁（/master/）內的連結均只在站內自我循環或連往 www.fcu.edu.tw/international_admissions/（國際生專用頁），全站找不到連往校級 recurit_list 白名單系統（本國生管道）的連結',
+    '🚩 首頁主導覽「關於」的裸路徑連結（https://gest.fcu.edu.tw/%e9%97%9c%e6%96%bc/，不含後綴）確認404；但完整巢狀路徑（/關於/ieet專區/）本身是200正常，說明壞的是父層路徑而非IEET頁面內容',
+    '產研頁「產學合作」標題下完全空白，企業合作未具名（與環境頁的實驗室具名程度形成反差）',
+    '學程主任的話（歡迎頁）未署名，即使成員頁已有主任呂晃志的完整資料，兩頁未串接',
+    '碩士班課程先修生頁幾乎無實質內容',
+    '出路資訊三要素本次均未確認到位',
+  ],
+  quick_fixes:[
+    '🚩 立即檢查招生頁（/apply/、/master/）是否應改連校級 recurit_list 系統',
+    '🚩 修復首頁「關於」裸路徑404連結，或直接改連到已正常運作的IEET專區頁',
+    '把成員頁的主任呂晃志資料串接到歡迎頁，補上署名',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://gest.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（5張：globalization、research、about、master、pre）與長卡片輪播（4張）逐一核對皆有連結。惟主導覽「關於」裸路徑（/關於/）確認404。'},
+    {name:'招生／apply', url:'https://gest.fcu.edu.tw/apply/',
+     notes:'🚩項目四B：本頁連結僅自我循環或連往 www.fcu.edu.tw/international_admissions/，全站找不到連往 recurit_list 白名單系統（本國生管道）的連結。'},
+    {name:'碩士專業／master', url:'https://gest.fcu.edu.tw/master/',
+     notes:'項目一：有「了解更多」連結至完整課程頁（/course/），文字介於計畫書與白話之間，4組內容含雙聯學制。'},
+    {name:'碩士班課程先修生／pre', url:'https://gest.fcu.edu.tw/pre/',
+     notes:'⚠️ 頁面幾乎無實質內容，僅標題與聯絡資訊，疑似頁面尚未建置完成。'},
+    {name:'師資／teachers', url:'https://gest.fcu.edu.tw/teachers/',
+     notes:'13組教師資料（講座、特約講座、特聘教授）皆有「More」連結，但無教師照片。'},
+    {name:'產研／research', url:'https://gest.fcu.edu.tw/research/',
+     notes:'⚠️「產學合作」標題下完全空白、企業未具名；但「全國第一座連續式厭氧生物氫能先導工場」是具體亮點設施。與環境頁的8間具名實驗室資訊有所區隔（本頁未整合列出）。'},
+    {name:'生活－企業實習／internship', url:'https://gest.fcu.edu.tw/internship/',
+     notes:'僅具名1家企業（日勝化工股份有限公司），未列完整合作清單，無學生心得或照片。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://gest.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少8則，即時性佳。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://gest.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質，最新2026.06.30。'},
+    {name:'關於－歡迎（學程主任的話）／greeting', url:'https://gest.fcu.edu.tw/greeting/',
+     notes:'氫能源、奈米複合儲氫材料等技術重點具體，但**未署名**——經查主任為呂晃志（成員頁有完整資料），建議串接補上署名。'},
+    {name:'關於－綜覽／about', url:'https://gest.fcu.edu.tw/about/',
+     notes:'提及2009年起招生、全國第一座連續式厭氧生物氫能模型工場，但缺學生人數、教師數量等量化數字，圖片僅裝飾性元素。'},
+    {name:'關於－環境（實驗室）／environment/lab', url:'https://gest.fcu.edu.tw/environment/lab/',
+     notes:'✅ 項目一：8間特色實驗室皆具名並列負責教師（林秋裕「生物氫能源實驗室」、吳石乙「多相流實驗室」、光電材料/分析電化學/綠色產品/永續能源科技/觸媒與潔淨能源等），研究方向說明完整，僅缺照片，是本次項目一實驗室要素完成度較高的頁面之一。'},
+    {name:'關於－成員／staff', url:'https://gest.fcu.edu.tw/staff/',
+     notes:'學程主任呂晃志（研究領域：儀器分析、電化學、綠色能源材料，淡江大學化工博士）聯絡資訊完整，但無照片。此頁資料應與歡迎頁串接以補足署名缺口。'},
+    {name:'（首頁輪播提及）國際化／globalization', url:'https://gest.fcu.edu.tw/globalization/',
+     notes:'僅列國際合作類別（海外實習、國際交流合作、國際競賽），無合作校名單、交流人數或學生心得，內容較空泛。'},
+  ]
+},
+{
+  id:'ds', college:'工程與科學學院', name:'數據科學碩士學位學程',
+  url:'https://ds.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查大幅修正）', evaluated:true,
+  overall:46, d1:9, d2:9, d3:7, d4:6, d5:2, d6:8, d7:5,
+  highlights:[
+    '學程主任的話定位清楚：「跨系跨院邀請理工商管各領域專家學者成立本學程」，強調實作經驗',
+    '校園新聞內容性質正確（榮譽獲獎類），非活動或公告冒充',
+    '站內連結掃描 0 個 404',
+  ],
+  pain_points:[
+    '🚩（重大修正）校園新聞近半年（2026-01-15後）僅1則，且該則本身也已超過8個月（2025.11.06），先前「最新消息僅2天」的判斷是誤把首頁通用倒數日期當成新聞更新，已修正為即時性嚴重停滯',
+    '🚩「學生愛分享」頁再次發現他系學生內容錯置（經濟系、材料系、資訊系等），是本次第3個確認案例（化工系、光電系、數據科學均中招）',
+    '碩士專業頁與綜覽頁內容近乎空白，僅一句話帶過，是本次全案例中最單薄的兩個頁面之一',
+    '學程主任的話未署名，缺具體數字佐證與照片',
+    '出路資訊三要素本次均未確認到位',
+  ],
+  quick_fixes:[
+    '優先更新校園新聞，目前最新一則已超過8個月，是本次至今發現最停滯的新聞頁之一',
+    '碩士專業頁與綜覽頁補充實質內容（課程清單、系所介紹正文），目前幾乎等於空頁',
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第3個確認案例，建議全校一次性排查）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://ds.fcu.edu.tw/',
+     notes:'Hero輪播6張連結皆有效，但多指向2024年舊聞（僅1張為2025.11），與新聞頁的停滯問題相互印證。'},
+    {name:'招生／apply', url:'https://ds.fcu.edu.tw/apply/',
+     notes:'項目四B：3個管道連結（碩士班甄試入學、考試入學、課程先修生）皆有效，管道仍偏單一，未見在職專班或境外生管道。'},
+    {name:'碩士專業／master', url:'https://ds.fcu.edu.tw/master/',
+     notes:'⚠️ 項目一：僅1組內容，一句使命宣言帶過，完全無課程介紹或連結，是本次全案例中內容最單薄的專業頁面之一。'},
+    {name:'師資／teachers', url:'https://ds.fcu.edu.tw/teachers/',
+     notes:'10位教師皆有「More」連結與研究專長，但無照片。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://ds.fcu.edu.tw/news/',
+     notes:'🚩項目六：近半年僅1則（2025.11.06教學績優教師獎），該則本身已逾8個月，是本次目前發現即時性最差的個案之一，與apmath並列。內容性質本身正確（榮譽獲獎類真新聞，非活動/公告冒充）。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://ds.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質，最新2026.04.09。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://ds.fcu.edu.tw/share-list/',
+     notes:'🚩已查證顯示經濟系、材料系、資訊系等他系學生心得，非數據科學學程本身學生，是本次第3個確認的資料來源錯置案例（化工系、光電系亦同）。'},
+    {name:'綜覽／overview', url:'https://ds.fcu.edu.tw/overview/',
+     notes:'⚠️ 幾乎無實質內容，僅標題「多樣的數理及資訊專業知識」加聯絡資訊，無系所介紹正文、無量化數字、無相關圖片，是本次全案例中最單薄的綜覽頁之一。'},
+    {name:'welcome（學程主任的話）', url:'https://ds.fcu.edu.tw/welcome/',
+     notes:'「駕馭數據得機緣 掌握產業半邊天」標題吸引力足，「跨系跨院邀請理工商管各領域專家學者成立本學程」定位清楚，但**未署名**、無具體數字（就業率、薪資、課程數、師資人數）、無照片。'},
+  ]
+},
+{
+  id:'imem', college:'工程與科學學院', name:'智能製造與工程管理碩士在職學位學程',
+  url:'https://imem.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查大幅修正）', evaluated:true,
+  overall:71, d1:14, d2:11, d3:9, d4:6, d5:8, d6:17, d7:6,
+  highlights:[
+    '✅✅「學長姐的寶貴經驗」頁有 17 位具名系友案例（含公司名稱與職稱，如陳楷宏／矽品精密／製造組主管、劉雲瑄／台積電／助理工程師），是本次全案例目前最強的出路資訊素材，遠超其他系',
+    '學程定位具體：2017年成立、整合十餘個系所、逾100位專任教師研發能量',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+    '招生頁提供簡章、申請表、推薦評估表等實用下載連結，行政資訊完整',
+    '首頁與招生頁均有填 SEO description',
+  ],
+  pain_points:[
+    '⚠️ 出路資訊素材（17位系友案例）品質極佳但完全未被引用到首頁或招生頁，訪客要點進「學習」選單下的次要連結才看得到，可發現性太低',
+    '學程主任的話未署名（經查主任為鍾健平副教授，成員頁有完整資料）',
+    '重點實驗室（/pr/）與重點研究（/research/）兩頁皆為空殼，僅有「多間特色實驗室」等籠統帶過，無具名實驗室或企業合作',
+    '跨領域學習頁完全空白，僅系辦聯絡資訊',
+    '招生頁僅1個管道連結（master_job_115），在職專班管道單一但屬合理',
+  ],
+  quick_fixes:[
+    '把「學長姐的寶貴經驗」17位案例中選2-3則搬到首頁或招生頁最顯眼位置，這是本次發現最被低估的素材',
+    '學程主任的話補上具名署名（鍾健平）',
+    '重點實驗室頁補上具名內容，或直接整合「環境」頁的資源共享說明',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://imem.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（4張：admissions、advmanager、curriculum、organization）與長卡片輪播（4張含跨校連結ces.fcu.edu.tw/faculty/，另2個#a/#b為SVG裝飾錨點非真實連結問題）皆有效。首頁有填SEO description。'},
+    {name:'招生／admissions', url:'https://imem.fcu.edu.tw/admissions/',
+     notes:'項目四B：1個recurit_list管道（master_job_115）連結有效，另提供招生簡章PDF、入學申請表、推薦評估表操作說明等下載，行政資訊完整度優於多數在職專班頁面。'},
+    {name:'學習－碩士在職專班／mastersdegree', url:'https://imem.fcu.edu.tw/mastersdegree/',
+     notes:'項目一：8項特色課程列出但無個別連結，文字偏計畫書語氣（「跨領域整合性課程」）。'},
+    {name:'學習－課程規劃與設計／curriculum', url:'https://imem.fcu.edu.tw/curriculum/',
+     notes:'課程地圖／課程檢索雙外部連結到位，另有113學年度前入學生的補修對照表下載，行政資訊具體。'},
+    {name:'學習－跨領域學習／interdisciplinary', url:'https://imem.fcu.edu.tw/interdisciplinary/',
+     notes:'⚠️ 完全空白，僅系辦聯絡資訊與社群連結，標題與內容不符。'},
+    {name:'學習－學長姐的寶貴經驗／gradthoughts', url:'https://imem.fcu.edu.tw/gradthoughts/',
+     notes:'✅✅ 項目一出路資訊最佳範例：17位具名系友（姓名＋現職公司＋職稱），涵蓋矽品精密、台積電、友達光電、上銀科技等知名企業，是本次目前發現最豐富的出路佐證，唯獨缺照片，且未被引用到其他重要頁面。'},
+    {name:'師資／teachers', url:'https://imem.fcu.edu.tw/teachers/',
+     notes:'12組教師資料（講座教授黃錦煌、5位特聘、6位專任教授）皆有「More」連結，但無照片。'},
+    {name:'產研－重點實驗室／pr', url:'https://imem.fcu.edu.tw/pr/',
+     notes:'⚠️ 僅籠統文字「資源共享多間特色實驗室」，無個別實驗室名稱、介紹、照片或負責教師，是空殼頁面。'},
+    {name:'產研－重點研究／research', url:'https://imem.fcu.edu.tw/research/',
+     notes:'⚠️ 同樣僅目錄性質，企業合作資訊需另外點連至跨校頁面 ces.fcu.edu.tw/research/ 才看得到，本頁本身無實質內容。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://imem.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，多為校級新聞（IEET認證、畢典、創業獲獎、產學MOU等），即時性佳，先前「約4個月」的判斷已修正為更準確的近期更新狀態。'},
+    {name:'關於－歡迎（學程主任的話）／welcome', url:'https://imem.fcu.edu.tw/welcome/',
+     notes:'「轉型浪潮，掌握先機」標題有力，「數位孿生」「虛實整合」等技術詞彙具體，2017年成立、100+教師等數字充分，但**未署名**（經查主任為鍾健平副教授）、無照片。'},
+    {name:'關於－綜覽／overview', url:'https://imem.fcu.edu.tw/overview/',
+     notes:'⚠️ 僅標題「國內最早成立智能製造系所之一」，缺系所介紹正文與量化數字，圖片僅裝飾元素。'},
+    {name:'關於－成員／members', url:'https://imem.fcu.edu.tw/members/',
+     notes:'學程主任鍾健平（研究領域：生產與作業管理、品質經營管理，逢甲工工博士，實驗室：設計品質生產力實驗室）與書記鄭翰陽聯絡資訊完整，但無照片。此頁資訊應與歡迎頁串接補足署名缺口。'},
+    {name:'關於－環境／surroundings', url:'https://imem.fcu.edu.tw/surroundings/',
+     notes:'強調「空間資源共享工科院內各系所多間特色實驗室及人創中心」，但同樣未具名列出實驗室，與「重點實驗室」頁內容高度重疊且皆空泛。'},
+  ]
+},
+{
+  id:'mae', college:'工程與科學學院', name:'機械與航空工程博士學位學程',
+  url:'https://mae.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查大幅修正）', evaluated:true,
+  overall:66, d1:12, d2:10, d3:9, d4:6, d5:8, d6:16, d7:5,
+  highlights:[
+    '✅ 綜覽頁有本次少見的完整校友分布數據：91年成立、96年起共47位校友，具體分布（印度1、越南4、國內大學12、中科院研究員4、工研院研究員4、高科技研發主管15、自行創業4、公職3）',
+    '✅ 環境頁 10 間實驗室／中心具名並附簡介（如「工101 智能化模具設計與成型中心」「航太501 風洞實驗室」），涵蓋光電、控制、CNC加工、飛機發動機等多元領域',
+    '特色定位清楚：全國唯一將機械與電腦輔助工程、航空工程、應用數學三系跨系教學資源橫向整合',
+    '✅ 校園新聞近半年至少8則，即時性佳',
+  ],
+  pain_points:[
+    '出路資訊數據雖具體（47位校友分布）但為累積20多年的總數，近年趨勢無法判斷，建議補近5年數據',
+    '產研頁「重點研究」「產學合作」「研究中心」「特色實驗室」「重點實驗室」5個標題區塊皆僅列標題、無實質內容，與環境頁的豐富實驗室資料形成強烈反差',
+    '學程主任的話未署名（經查主任為戴國政副教授，成員頁有完整資料）',
+    '博士班課程頁僅連結至外部課程地圖/檢索系統，無具體課程清單',
+    '主任無照片',
+  ],
+  quick_fixes:[
+    '把「環境」頁10間實驗室的具名資料整合進「產研」頁，避免產研頁看起來像空殼',
+    '學程主任的話補上具名署名（戴國政）',
+    '出路數據補充近5年趨勢，讓47人的累積統計更有時效參考價值',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://mae.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（2張：apply、phd-degree）與長卡片輪播（5張：特色亮點1-3、國際交流、phd-degree）皆有連結，即時性佳（約11天）。'},
+    {name:'招生／apply', url:'https://mae.fcu.edu.tw/apply/',
+     notes:'項目四B：本國生2個連結（甄試、考試入學）＋境外生1個連結（國際學生招生），共3個管道，博士學程規模合理。'},
+    {name:'學習－博士班／phd-degree', url:'https://mae.fcu.edu.tw/phd-degree/',
+     notes:'項目一：「必選修與課程地圖」「課程檢索」雙連結到位，「培育機械、航太、數據科學及光電跨領域高階研發人才」定位清楚，但無具體課程清單，偏計畫概述。'},
+    {name:'產研／research', url:'https://mae.fcu.edu.tw/research/',
+     notes:'⚠️ 5個標題（重點研究/產學合作/研究中心/特色實驗室/重點實驗室）皆無實質內容，企業合作未具名，與「環境」頁的10間具名實驗室形成強烈反差，建議整合。'},
+    {name:'師資／teachers', url:'https://mae.fcu.edu.tw/teachers/',
+     notes:'11組教師資料（2位講座教授、7位特聘、2位專任教授）皆有「More」連結，但無教師照片。'},
+    {name:'關於－環境／environment', url:'https://mae.fcu.edu.tw/environment/',
+     notes:'✅ 項目一：10間實驗室／中心具名並有簡介（非線性光電實驗室、智能化模具設計與成型中心、控制與機電系統實驗室、電腦輔助工程實驗室、CNC機加工實習室、數位轉型研究中心、風洞實驗室、企業聯網應用實驗室、精密機械主軸實驗室、飛機及發動機實驗室），涵蓋範圍廣，是本次項目一實驗室要素完成度最高的頁面之一，唯缺照片。'},
+    {name:'關於－綜覽／about', url:'https://mae.fcu.edu.tw/about/',
+     notes:'✅ 項目一出路資訊：91年成立、96年首屆畢業至今47位校友，並列出印度/越南/國內大學/中科院/工研院/高科技研發主管/創業/公職的具體分布，是本次少見有校友「流向分類統計」而非僅籠統數字的頁面。'},
+    {name:'成員／staff', url:'https://mae.fcu.edu.tw/staff/',
+     notes:'學程主任戴國政副教授（研究專長：電腦輔助機械製圖/設計與製造、輕合金開發，日本橫濱國立大學博士）與蔡文卿聯絡資訊完整，但無照片，應與歡迎頁串接補足署名。'},
+    {name:'校園新聞／news-list', url:'https://mae.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少8則，多為校級新聞（IEET認證、畢典、創業獲獎、產學MOU），即時性佳。'},
+  ]
+},
+{
+  id:'space', college:'工程與科學學院', name:'太空系統工程碩士學位學程',
+  url:'https://space.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:58, d1:12, d2:10, d3:8, d4:6, d5:4, d6:12, d7:6,
+  highlights:[
+    '系主任具名（張淵仁，與 mae 學程共同主持），以「國家重點發展目標」論述太空系統工程定位',
+    '綜覽頁有具體數字：2023年設立、每年招收15位研究生',
+    '環境頁列出「科學與航太館」8項設施（風洞、結構、控制與機電系統等），與航太系共用場館資源',
+    '首頁與招生頁均有填 SEO description',
+  ],
+  pain_points:[
+    '⚠️（修正）校園新聞近半年（2026-01-15後）僅2則，先前「約11天」的判斷是誤把首頁通用倒數日期當成新聞更新，即時性實際偏弱',
+    '「學生愛分享」頁顯示的是航太與系統工程學系（大學部）學生心得而非太空系統工程碩士學程本身學生——這與化工/光電/數據科學的錯置案例性質不同，因太空學程2023年才成立、可能尚無足夠畢業生投稿，屬於姊妹單位共用平台的合理情況而非系統錯誤，但仍建議標示清楚避免訪客誤解',
+    '招生頁（/admissions/）連結均指向 www.fcu.edu.tw/apply/ 校級總覽頁，並未連往 recurit_list 白名單個別管道頁',
+    '重點實驗室頁僅2間、無負責教師具名；重點研究頁未見具名企業合作',
+    '主任無照片，歡迎文字缺乏具體數字佐證',
+  ],
+  quick_fixes:[
+    '確認招生頁應連往哪個正式入口，統一導向校級 recurit_list 系統的個別管道頁',
+    '「學生愛分享」頁註明目前分享內容來自航太系，或等太空學程有畢業生後盡快補上本學程學生心得',
+    '歡迎頁補上具體數字（如已招收屆數、學生人數）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://space.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（4張，含「太空所新聞快報」、2024/2023新聞）與長卡片輪播（3張：key-laboratories、space-curriculum、system-curriculum）皆有連結。首頁有填SEO description。'},
+    {name:'招生／admissions', url:'https://space.fcu.edu.tw/admissions/',
+     notes:'項目四B：本國生2連結＋境外生2連結，共4個管道皆指向 www.fcu.edu.tw/apply/ 校級總覽頁，未見 recurit_list 個別管道連結，與航太系（同行政團隊）同類型個案。'},
+    {name:'學習－太空工程課程領域／space-curriculum', url:'https://space.fcu.edu.tw/space-curriculum/',
+     notes:'項目一：僅列4個課程分類標題（火箭系統開發與設計、衛星系統開發與設計等），無具體課程說明或連結，文字偏計畫書語氣。'},
+    {name:'學習－系統工程課程領域／system-curriculum', url:'https://space.fcu.edu.tw/system-curriculum/',
+     notes:'同樣僅列4門課程名稱，無描述、學分數、授課教師等細節。'},
+    {name:'產研－重點實驗室／key-laboratories', url:'https://space.fcu.edu.tw/key-laboratories/',
+     notes:'⚠️ 僅2間實驗室（衛星系統工程與酬載教學實驗室、火箭系統工程教學實驗室），有簡短功能說明但無負責教師具名、無照片。'},
+    {name:'產研－重點研究／primary-research-areas', url:'https://space.fcu.edu.tw/primary-research-areas/',
+     notes:'僅說明火箭與衛星兩大研究方向，企業合作需另外點擊外部連結（oice.fcu.edu.tw）才看得到，本頁未具名。'},
+    {name:'師資／teachers', url:'https://space.fcu.edu.tw/teachers/',
+     notes:'12組教師資料（1位講座教授、8位特聘、3位專任教授）皆有「More」連結，但無照片。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://space.fcu.edu.tw/news/',
+     notes:'⚠️ 項目六：近半年僅2則（2026.03、2026.04），其餘新聞集中在2024-2025，即時性明顯不足於同院其他系所。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://space.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質，最新2026.06.30。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://space.fcu.edu.tw/share-list/',
+     notes:'⚠️ 已查證顯示的是「航太與系統工程學系」（大學部）學生心得（歐晉華、賴心榆等），非太空系統工程碩士學程本身學生。與化工/光電/數據科學的錯置案例性質不同——太空學程2023年才成立，可能尚無自己的畢業生投稿，屬姊妹單位共用平台，建議頁面加註說明來源。'},
+    {name:'關於－歡迎（系主任的話）／welcome', url:'https://space.fcu.edu.tw/welcome/',
+     notes:'系主任張淵仁具名，「國家目前在航太領域中列為重點發展目標」定位清楚，但無具體數字佐證（招生人數、任務參與數等），無照片。'},
+    {name:'關於－綜覽／overview', url:'https://space.fcu.edu.tw/overview/',
+     notes:'✅ 有具體數字：2023年設立、每年招收15位研究生，辦公時間等資訊完整，但缺實驗室或學生活動的實景照片，與介紹中提及的風洞/控制系統實驗室不相符。'},
+    {name:'關於－環境／environment', url:'https://space.fcu.edu.tw/environment/',
+     notes:'介紹「科學與航太館」（地下2層地上8層，面積1萬平方公尺），列出8項設施（風洞、結構、控制與機電系統實驗室等），與航太系共用場館，但未逐一附負責教師或照片。'},
+    {name:'關於－成員／member', url:'https://space.fcu.edu.tw/member/',
+     notes:'學程主任張淵仁與3位行政人員聯絡資訊完整，但無照片。'},
+  ]
+},
+{
+  id:'nze', college:'工程與科學學院', name:'學士後淨零智慧永續學士班',
+  url:'https://nze.fcu.edu.tw/', eval_date:'2026-07-15（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:59, d1:13, d2:10, d3:4, d4:6, d5:8, d6:13, d7:5,
+  highlights:[
+    '定位最清楚的學程之一：明確鎖定「非理工人跨域轉職」利基，48學分、2023年成立、整合10個理工相關系所資源',
+    '綜覽頁具體數字：全國唯一對接2050淨零排放的學士後專班，整合9個系所、7個學位學程、11個研究中心',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+    '學程主任身分已查明為呂晃志（與gest學程同一人兼任，成員頁有完整資料）',
+  ],
+  pain_points:[
+    '⚠️ 招生頁未按管道分類，全頁僅1個籠統的「最新招生資訊」連結導向校級總覽頁，是本次全案例中招生頁資訊架構最簡陋的個案之一（且該連結的slug post-baccprogadmission1不在既有白名單清單內，需與校級單位確認）',
+    '🚩「學生愛分享」頁再次發現他系學生內容錯置（經濟系、材料系、資訊系等），是本次第4個確認案例（化工系、光電系、數據科學、本班皆中招）',
+    '學士專業頁課程僅列清單無個別介紹或連結，文字偏計畫書語氣',
+    '學程主任的話未署名，即使成員頁已有呂晃志完整資料，兩頁未串接',
+    '出路資訊三要素本次均未確認到位',
+  ],
+  quick_fixes:[
+    '請校級招生業務單位確認 post-baccprogadmission1 是否為有效 slug，並改善招生頁的管道分類呈現',
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第4個確認案例，建議全校一次性排查，這是目前累積最多重複案例的系統性問題）',
+    '把成員頁的主任呂晃志資料串接到歡迎頁，補上署名（與gest學程做法相同）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://nze.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（4張：undergraduate、apply、greeting、faculty）與長卡片輪播（6張，含2則share-detail學生案例）皆有連結，即時性佳。'},
+    {name:'招生／apply', url:'https://nze.fcu.edu.tw/apply/',
+     notes:'⚠️項目四B：全頁未按管道分類，僅1個「最新招生資訊」連結（slug為post-baccprogadmission1，不在既有白名單），對比其他系動輒5-15個管道連結，本頁資訊架構明顯簡陋。「合作產業」（精密機械/光電半導體/民生化工）分類倒是具體。'},
+    {name:'學習－學士專業／undergraduate', url:'https://nze.fcu.edu.tw/undergraduate/',
+     notes:'項目一：淨零減碳課程模組（8門）＋智慧製造管理課程模組（7門）＋實作模組（1門）分類清楚，但每門課僅列名稱無介紹或連結，文字偏計畫書語氣，無學生作品或成果照片。'},
+    {name:'師資總覽／faculty', url:'https://nze.fcu.edu.tw/faculty/',
+     notes:'專任教師（約12位）多數有連結至各系所教師詳細頁，兼任教師（約8位）則無連結，也皆無照片。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://nze.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，新聞/活動/公告有標籤區隔，即時性佳。'},
+    {name:'新聞與活動－校園公告／announcements-list', url:'https://nze.fcu.edu.tw/announcements-list/',
+     notes:'純公告性質，最新2026.06.30。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://nze.fcu.edu.tw/share-list/',
+     notes:'🚩已查證顯示經濟系、材料系、資訊系、行銷系、機電系等他系學生心得，非本班學生，是本次第4個確認的資料來源錯置案例。'},
+    {name:'關於－歡迎（主任的話）／greeting', url:'https://nze.fcu.edu.tw/greeting/',
+     notes:'項目一特色辨識前段班：「為『非』理工人進入理工領域的契機」定位精準，48學分、2023年成立、整合10個理工系所資源皆為具體數字。缺口：**未署名**（經查主任為呂晃志，與gest學程同一人兼任，成員頁有完整資料）、無照片。'},
+    {name:'關於－綜覽／about', url:'https://nze.fcu.edu.tw/about/',
+     notes:'✅ 「全國開設之STEM領域學士後專班，唯一對接台灣企業實踐2050年淨零排放的綠色轉型課程」定位具體，並有9系所/7學位學程/11研究中心的整合規模數字，但缺實景照片。'},
+    {name:'成員／staff', url:'https://nze.fcu.edu.tw/staff/',
+     notes:'主任呂晃志（研究領域：儀器分析化學、綠色能源材料，淡江化學所博士）與助理林欣怡聯絡資訊完整，但無照片。'},
+  ]
+},
+
+/* ── 商學院 ── */
+{
+  id:'marketing', college:'商學院', name:'行銷學系',
+  url:'https://marketing.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:56, d1:10, d2:12, d3:6, d4:6, d5:7, d6:11, d7:4,
+  highlights:[
+    '四年學習哲學定位清楚且具連貫性（大一學美／大二學細節／大三學集中／大四學謙沖），首頁長卡片輪播完整對應四張連結',
+    '系主任王婉禎具名署名，歡迎頁有具體數字佐證（每學年出國交換40-60人、4所合作大學雙聯學制方案）',
+    '✅ 學生愛分享頁查核8位撰文者皆為本系學生（文｜行銷學系），非錯置案例',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+  ],
+  pain_points:[
+    '🚩【重要缺失，沿用既有發現】主導覽「學習」連結技術性失效（href="http://learn"，非有效網域，DNS無法解析），訪客點擊主導覽該項會直接撞牆——已確認此連結位於主導覽選單（非輪播或內文）',
+    '國際交流頁與產研頁皆為標題空殼：國際交流頁僅顯示「雙聯學位／商學院雙聯／出國交換研修」連結類別但無合作學校清單；產研頁「重點研究」「產研成果報導」皆無實質內容，僅1個專題計畫名稱',
+    '學士專業頁課程僅列4個抽象教學方向（專題實作、課程設計與規劃等），無具體課程名稱或學分資訊，文字偏意象化（如「定位真功夫」）而非資訊性',
+    '綜覽頁缺乏成立年份、學生人數、師資人數、就業率等具體數字，偏形象宣傳而非量化資訊',
+    '系主任於成員頁與歡迎頁皆無照片，亦無主任個人電子信箱（僅系辦公室共用聯絡方式）',
+  ],
+  quick_fixes:[
+    '立即聯繫網管修復主導覽「學習」連結（應指向 https://marketing.fcu.edu.tw/學習/ 而非失效的 http://learn）',
+    '產研頁補上具名研究人員／實驗室／合作企業，避免與國際交流頁一樣淪為空殼',
+    '學士專業頁新增至少3-5門具體課程名稱或連結課程地圖',
+    '綜覽頁補充具體數字（學生人數、就業率、企業合作家數）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://marketing.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播（5張：國際交流、2則news、2則YouTube影片）與長卡片輪播（5張：大一至大四學習哲學＋學士專業）皆有連結，內容豐富。'},
+    {name:'招生／apply', url:'https://marketing.fcu.edu.tw/apply/',
+     notes:'項目四B：連結正常（200），內容涵蓋學士班／碩士班（外部globalmarketing.fcu.edu.tw站）／書審準備指引／collego選才等多管道。'},
+    {name:'學習－學士專業／學士專業', url:'https://marketing.fcu.edu.tw/學士專業/',
+     notes:'項目一：僅列4個抽象教學方向（專題實作、課程設計與規劃、專題展現、創新學制），無具體課程名稱、學分或課程地圖，文字意象化（「定位真功夫」「革命情感」），有logo與認證圖但無課程/教室實景照片。'},
+    {name:'學習（landing）／學習', url:'https://marketing.fcu.edu.tw/學習/',
+     notes:'⚠️ 此頁本身可正常開啟（200）且作為資訊樞紐引導至各學習相關頁面，但主導覽「學習」項目的href卻誤設為http://learn（無效網域）而非本頁網址，造成訪客點主導覽必然撞牆。'},
+    {name:'師資／teachers', url:'https://marketing.fcu.edu.tw/teachers/',
+     notes:'連結正常（200），依職稱分類（專任教授/副教授/助理教授、兼任副教授/助理教授）呈現。'},
+    {name:'產研／產研', url:'https://marketing.fcu.edu.tw/產研/',
+     notes:'⚠️ 僅「三年級深碗專題計畫『織創品牌行銷專題』」一項具體標題，「重點研究」「產研成果報導」皆空白，無具名研究人員或合作企業清單，內容價值有限。'},
+    {name:'國際交流／國際交流-2', url:'https://marketing.fcu.edu.tw/國際交流-2/',
+     notes:'⚠️ 僅顯示「雙聯學位／商學院雙聯／出國交換研修」連結類別本身，未展示合作學校清單或合作內容說明，訪客需再點擊才能得知細節。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://marketing.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年（2026-01-15後）至少9則，最新至2026.06.10，多為校級新聞。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://marketing.fcu.edu.tw/share-list/',
+     notes:'✅ 已查證列出的8位撰文者（布施帆海、莊秉易、陳依琳、劉得逸、葉立揚、柴涵真、龐舒勻、連詩淮）皆標註「文｜行銷學系」，確認為本系學生，非錯置案例。'},
+    {name:'關於－歡迎／歡迎', url:'https://marketing.fcu.edu.tw/歡迎/',
+     notes:'系主任王婉禎具名署名（「王婉禎　謹識」），有具體數字（每學年出國交換40-60人、4所合作大學雙聯方案），但無照片。'},
+    {name:'關於－綜覽／綜覽', url:'https://marketing.fcu.edu.tw/綜覽/',
+     notes:'⚠️ 缺乏成立年份、學生人數、師資人數、就業率／升學率等量化資訊，偏形象化描述（「培養成企業所需的行銷人才」），僅重申大一至大四學習哲學。'},
+    {name:'關於－成員／企業實習', url:'https://marketing.fcu.edu.tw/企業實習/',
+     notes:'實為成員頁：系主任王婉禎姓名、職稱、電話（04-24517250#4380）、學歷與研究專長完整，但無照片、無主任個人電子信箱（僅系辦共用信箱）。'},
+  ]
+},
+{
+  id:'acct', college:'商學院', name:'會計學系',
+  url:'https://acct.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:63, d1:11, d2:13, d3:9, d4:6, d5:7, d6:12, d7:5,
+  highlights:[
+    '✅（修正先前判斷）本國生招生管道實為完整：學士班9個管道（繁星/個人申請/考試分發/四技二專技優甄審與甄選/特殊選才/轉學生/身心障礙生甄試）與碩士班2個管道皆連往 www.fcu.edu.tw/national_list/ 白名單系統，僅境外生管道仍導向籠統總覽頁',
+    '成立於1961年，為創校四大學系之一，「環境會計研究中心」與「會計與公司治理期刊」皆具名',
+    '系主任吳東憲具名署名，成員頁聯絡資訊完整（含個人信箱）',
+    '✅ 校園新聞近半年至少8則，即時性佳',
+    'Hero輪播8張、長卡片輪播4張連結全數有效（含PDF得獎名單、財政部網站等外部資源）',
+  ],
+  pain_points:[
+    '產研頁「環境會計研究中心」「會計與公司治理期刊」雖具名，但均未附具體研究成果、進行中專案或企業合作案例',
+    '系友頁著重基金會獎學金制度介紹，缺乏具名系友案例（姓名/任職公司/職稱），說服力不足',
+    '關於頁僅有「1961年成立」一項具體數字，缺學生人數、考取證照人數、就業率、企業合作家數',
+    '系主任於成員頁與歡迎頁皆無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '境外生招生管道補上具體申請入口，比照本國生連往白名單系統',
+    '系友頁補上3-5位具名系友案例（姓名、任職公司、職稱）',
+    '首頁補上 SEO description',
+    '產研頁的兩個研究單位補上近期具體成果或合作企業',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://acct.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播8張（含PDF文件、外部新聞、財政部連結、比賽獲獎名單）與長卡片輪播4張（企業實習、學士班、獎學金辦法PDF、碩士班）皆為有效連結。SEO description留空。'},
+    {name:'招生／apply', url:'https://acct.fcu.edu.tw/apply/',
+     notes:'✅（修正先前「未連往白名單」的誤判）本國生學士班9個管道、碩士班2個管道皆指向 www.fcu.edu.tw/national_list/ 白名單系統，資訊架構完整；境外生管道則仍導向 international_admissions 總覽頁。'},
+    {name:'學習－學士班／undergraduate', url:'https://acct.fcu.edu.tw/undergraduate/',
+     notes:'項目一：提及中級會計學、高等會計學、電腦審計等課程名稱，並有「課程設計與規劃」連結至 curriculum-undergraduate 頁，2019年起實施跨領域專長制度，具一定具體度。'},
+    {name:'產研／research', url:'https://acct.fcu.edu.tw/research/',
+     notes:'⚠️「環境會計研究中心」與「會計與公司治理期刊」皆具名，宗旨敘述清楚，但無具體研究成果、進行中專案或企業合作案例，深度資訊有限。'},
+    {name:'師資／faculty', url:'https://acct.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（專任教授/客座教授/副教授/助理教授、兼任副教授/助理教授）。'},
+    {name:'生活－系友／alumnus', url:'https://acct.fcu.edu.tw/alumnus/',
+     notes:'⚠️ 內容集中於「財團法人逢甲會計教育基金會」（1995年成立）獎學金制度介紹，缺具名系友姓名、任職公司、職稱等實際案例，說服力偏弱。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://acct.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少8則，最新至2026.06.10。'},
+    {name:'關於－歡迎／greeting', url:'https://acct.fcu.edu.tw/greeting/',
+     notes:'系主任吳東憲具名署名，「2024年8月1日接任」為具體時間點，但成就描述籠統（「取得許多顯著成就」），無照片。'},
+    {name:'關於－綜覽／about', url:'https://acct.fcu.edu.tw/about/',
+     notes:'⚠️ 僅「1961年成立、為創校四大學系之一」一項具體數字，缺學生數、考取證照人數、就業率、企業合作家數等量化資訊，多為「表現優異」等定性描述。'},
+    {name:'成員／staff', url:'https://acct.fcu.edu.tw/staff/',
+     notes:'系主任吳東憲姓名、電子信箱（thwu@o365.fcu.edu.tw）、電話聯絡資訊完整，但無照片。'},
+  ]
+},
+{
+  id:'itra', college:'商學院', name:'國際貿易與財務管理學系',
+  url:'https://itra.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:63, d1:11, d2:12, d3:10, d4:6, d5:7, d6:12, d7:5,
+  highlights:[
+    '✅（修正先前「約9個月停滯」的誤判）校園新聞實際近半年至少6則，最新距健檢日約23天，即時性良好，並非停滯',
+    '招生頁（/recruit/）11個管道（含本國生3個、境外生5個、碩士班2個）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統，是商學院管道白名單合規度最佳個案之一',
+    '系主任林呈昱具名署名，成員頁聯絡資訊完整（含個人信箱）',
+    '創系60周年紀念特刊、電子報等歷史底蘊素材具名呈現',
+    '✅ 學生愛分享頁3位撰文者皆標註本系（唯用舊系名「國際經營與貿易學系」），確認為本系學生非錯置',
+  ],
+  pain_points:[
+    '⚠️ 網站多處（首頁title、學生愛分享頁）仍使用舊系名「國際經營與貿易學系」，與現行「國際貿易與財務管理學系」不一致，建議全站統一更新',
+    '產研頁僅提及「7+1產學合作」計畫名稱，無具體合作企業清單或研究成果',
+    '學士專業頁無具體課程名稱，僅泛稱「國際貿易」「國際經營」雙軌領域',
+    '綜覽頁僅「60週年」一項具體數字，「就業」「升學」「校友表現」等分類標題下皆未填入實際數據',
+    '系主任於成員頁與歡迎頁皆無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '全站系名統一更新為「國際貿易與財務管理學系」（title、學生愛分享等處仍顯示舊名）',
+    '產研頁補上具體合作企業清單或近期研究成果',
+    '綜覽頁「就業」「升學」「校友表現」三個既有分類補入實際數據',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://itra.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播8張（含校友快訊、法國Excelia商學院、PDF簡章）與長卡片輪播5張（競賽、兩岸東南亞學程、企業實習、學士/碩士專業）皆為有效連結。⚠️ 頁面title與meta仍顯示舊系名「國際經營與貿易學系」。SEO description留空。'},
+    {name:'招生／recruit', url:'https://itra.fcu.edu.tw/recruit/',
+     notes:'✅ 項目四B：本國生3管道（繁星/個人申請/四技二專）＋境外生5管道（僑港澳兩梯次/海外聯招/外國學生秋春季）＋碩士2管道，共11管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統，非籠統總覽頁，是本次確認最完整的招生白名單案例之一。'},
+    {name:'學習－學士專業／undergraduate', url:'https://itra.fcu.edu.tw/undergraduate/',
+     notes:'項目一：僅泛稱「國際貿易」「國際經營」雙軌領域＋CDIO教學法，無具體課程名稱，另有「課程設計與規劃」連結至 curriculum-undergraduate 頁但未內嵌課程地圖。'},
+    {name:'產研／research', url:'https://itra.fcu.edu.tw/research/',
+     notes:'⚠️ 僅提及「7+1產學合作」計畫名稱與「提供多元實習機會」，無具體企業清單、研究中心負責人或研究成果標題，「研究中心」「產研成果」子連結內容待補。'},
+    {name:'師資／teachers', url:'https://itra.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特約講座/專任教授/副教授/助理教授、兼任教授/助理教授/講師）。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://itra.fcu.edu.tw/news/',
+     notes:'✅（修正先前誤判）近半年（2026-01-15後）至少6則，最新為2026.06.24，距健檢日約23天，即時性良好，非先前記錄的「約9個月停滯」。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://itra.fcu.edu.tw/share-list/',
+     notes:'✅ 3位撰文者（陳玫雅、徐資琳、江柏昇）皆標註「國際經營與貿易學系」——確認為本系學生，惟該署名使用的是系所舊名而非現行「國際貿易與財務管理學系」。'},
+    {name:'關於－歡迎／welcome', url:'https://itra.fcu.edu.tw/welcome/',
+     notes:'系主任林呈昱具名署名，「站在巨人的肩膀上」比喻生動，5項特色列舉完整，但「海外實習人數」「競賽獲獎次數」等均為模糊表述，無主任照片。'},
+    {name:'關於－綜覽／overview', url:'https://itra.fcu.edu.tw/overview/',
+     notes:'⚠️ 僅「創系60年」一項具體數字，頁面雖已建立「就業」「升學」「校友表現」三個分類標題但皆未填入實際數據，架構完整但內容空白。'},
+    {name:'成員／staff', url:'https://itra.fcu.edu.tw/staff/',
+     notes:'系主任林呈昱姓名、電子信箱（chenylin@o365.fcu.edu.tw）、分機電話完整，但無照片。'},
+  ]
+},
+{
+  id:'pf', college:'商學院', name:'財務學系',
+  url:'https://pf.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:67, d1:13, d2:13, d3:12, d4:6, d5:7, d6:11, d7:5,
+  highlights:[
+    '系主任梁景洋具名署名，親切對話風格且數字紮實：60年歷史（民國53年成立）、每年近20萬元系友獎學金、每月6000元大專生計畫補助',
+    '招生頁11管道中10個指向 www.fcu.edu.tw/recurit_list/ 白名單系統，僅碩士班境外生1管道連往系級總覽頁',
+    '學士專業頁課程模組具體度中上：財稅概論為定錨課程、租稅法／中會為深碗課程、財稅專題為跨域實作課程，並雙管道提供課程地圖＋課程檢索系統連結',
+    '✅ 學生愛分享頁8位撰文者皆標註「逢甲財稅系」，確認為本系學生',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+  ],
+  pain_points:[
+    '⚠️ 網站實際內容（財稅新聞、財稅專業實習、「財稅系成立於民國五十三年」等）通篇使用「財稅學系」，與儀表板記錄的官方系名「財務學系」不一致，建議確認正式系名並統一',
+    '導覽選單中完全沒有「產研」分類，是本次唯一結構性缺少此區塊的個案（非空殼而是根本未設置）',
+    '綜覽頁僅「民國53年成立」一項具體數字，缺學生人數、就業率、考取證照率',
+    '系主任於成員頁與歡迎頁皆無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '確認系所正式名稱（財務學系 vs 財稅學系）並統一儀表板記錄與網站內容',
+    '評估是否需要新增「產研」導覽分類，或說明研究資訊改置於何處',
+    '碩士班境外生招生管道補上白名單連結',
+    '綜覽頁補充學生人數、就業率等量化數字',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://pf.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播7張（含SharePoint文件、Office表單、LINE Today報導、Facebook貼文）與長卡片輪播5張（3則share學生案例、2支YouTube影片）皆為有效連結。SEO description留空。'},
+    {name:'招生／apply', url:'https://pf.fcu.edu.tw/apply/',
+     notes:'項目四B：本國生6管道＋境外生3管道＋碩士本國生2管道，共11管道中10個指向 www.fcu.edu.tw/recurit_list/ 白名單系統，僅「碩士班僑生及港澳生單獨招生」連往系級總覽頁 pf.fcu.edu.tw/apply/ 本身（循環連結）。'},
+    {name:'學習－學士專業／undergraduate', url:'https://pf.fcu.edu.tw/undergraduate/',
+     notes:'項目一：課程模組具體度中上（財稅概論定錨課程、租稅法/中會深碗課程、財稅專題跨域實作），並提供課程地圖（registration.fcu.edu.tw/courseplan/）與課程檢索（coursesearch02.fcu.edu.tw）雙連結。'},
+    {name:'師資／teachers', url:'https://pf.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特約講座/專任教授/副教授/助理教授/講師、兼任教授/副教授/助理教授/講師）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://pf.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，最新至2026.06.10。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://pf.fcu.edu.tw/share-list/',
+     notes:'✅ 8位撰文者（梁晶晶、江孟蓉、劉勁志、戴俊安、林愉青、李至濤、李萱、陳昱如）皆標註「逢甲財稅系」，確認為本系學生，惟系名與儀表板記錄的「財務學系」不同。'},
+    {name:'關於－歡迎／welcome', url:'https://pf.fcu.edu.tw/welcome/',
+     notes:'系主任梁景洋具名署名（「梁景洋 敬上」），親切對話風格（「做個自然，誠懇，踏實的人」），有60年歷史、近20萬元系友獎學金、6000元大專生計畫補助等具體數字，但無照片。'},
+    {name:'關於－綜覽／about', url:'https://pf.fcu.edu.tw/about/',
+     notes:'⚠️ 僅「財稅系成立於民國五十三年」一項具體數字，缺學生人數、就業率、考取證照率，系友表現（政府機關主管、金融界高層、會計師）為定性列舉而非統計數字。'},
+    {name:'成員／staff', url:'https://pf.fcu.edu.tw/staff/',
+     notes:'系主任梁景洋姓名、電話（04-24517250#4314）、電子信箱（liangcy@o365.fcu.edu.tw）完整，但無照片。'},
+  ]
+},
+{
+  id:'coop', college:'商學院', name:'合作經濟暨社會事業經營學系',
+  url:'https://coop.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:60, d1:11, d2:10, d3:10, d4:6, d5:7, d6:10, d7:6,
+  highlights:[
+    '招生管道分列清楚：本國生6管道＋境外生3管道（合計9管道）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '學士班三大領域（social-entrepreneurship社會創新創業／economic經濟／management管理）分頁結構清楚',
+    '首頁有填 SEO description（合作經濟暨社會事業經營學系）',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+    '✅ 學生愛分享頁已查證撰文者標註本系（合作經濟暨社會事業經營學系）',
+  ],
+  pain_points:[
+    '🚩「關於」頁（/j/）無系主任具名署名，僅系所沿革（民國54年創系、105年更名）等制度性資訊，與其他系所常見的具名歡迎文字形成明顯落差——經查系主任為江宜芳副教授（成員頁有完整資料），建議串接補齊',
+    '「重點研究」與「研究中心」兩頁皆為空殼：前者無具名研究人員或研究主題，後者雖有中心宗旨但無明確命名的中心列表',
+    '學士班頁課程模組描述抽象（「新鮮人專題」「定錨課程」「深碗專題」），未提供課程地圖連結',
+    '綜覽頁僅「民國54年創系」一項具體數字，缺學生人數、就業率',
+    '系主任於成員頁無照片',
+  ],
+  quick_fixes:[
+    '「關於」頁補上系主任江宜芳具名歡迎文字（成員頁資料可直接引用）',
+    '「重點研究」「研究中心」補上具名研究人員與中心名稱',
+    '學士班頁補上課程地圖連結',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://coop.fcu.edu.tw/',
+     notes:'項目四A：長卡片輪播5張（3大領域分頁＋2個page_id連結，經查該2連結雖帶preview=true參數但實際301重定向至已發布的正式頁面，非失效連結）皆可正常到達。SEO description已填寫。Hero輪播僅偵測到1張帶連結（需人工複核輪播結構）。'},
+    {name:'招生（學士）／apply-undergraduate', url:'https://coop.fcu.edu.tw/apply-undergraduate/',
+     notes:'項目四B：本國生6管道＋境外生3管道，共9管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統。'},
+    {name:'學習－學士班／undergraduate', url:'https://coop.fcu.edu.tw/undergraduate/',
+     notes:'項目一：課程模組描述抽象（合作組織與經營管理、企業倫理與社會責任、社會事業經營管理等課程名稱有提及，但新鮮人專題/定錨課程/深碗專題僅為教學階段概念），無課程地圖連結，僅「了解更多」連至課程設計頁。'},
+    {name:'產學與研究－重點研究／重點研究', url:'https://coop.fcu.edu.tw/重點研究/',
+     notes:'⚠️ 無具名研究人員或具體研究主題，僅「展望國際視野，給學生不一樣的角度學習」等抽象願景詞，實質為裝飾性頁面。'},
+    {name:'產學與研究－研究中心／研究中心', url:'https://coop.fcu.edu.tw/研究中心/',
+     notes:'⚠️ 有宗旨敘述（「藉由社會創新與管理、公民倫理的合作行動」）與中華民國儲蓄互助協會夥伴關係說明，但未列出明確命名的研究中心清單。'},
+    {name:'師資／faculty', url:'https://coop.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（特約講座/專任教授/副教授/助理教授、兼任教授/副教授/助理教授/講師）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://coop.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，最新至2026.06.10。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://coop.fcu.edu.tw/share-list/',
+     notes:'✅ 已查證撰文者（如分享華語文志工隊經驗的陳柏鈞）標註「逢甲大學 合作經濟暨社會事業經營學系」，確認為本系學生。'},
+    {name:'關於／j', url:'https://coop.fcu.edu.tw/j/',
+     notes:'🚩 無系主任具名署名，僅「民國105年本系奉教育部核准更名」等制度性資訊與聯絡方式，缺乏個人化信任感來源，是本次商學院文案表現最弱的個案之一。'},
+    {name:'關於－綜覽／about', url:'https://coop.fcu.edu.tw/about/',
+     notes:'⚠️ 僅「民國54年以『合作經濟學系』為名創系」一項具體數字，學生人數、就業率未提及，內容偏三大領域發展主軸的定性描述。'},
+    {name:'成員／成員', url:'https://coop.fcu.edu.tw/成員/',
+     notes:'系主任江宜芳（副教授兼系主任）姓名、信箱（yfchiang@o365.fcu.edu.tw）、分機（4358）、研究室（商934）完整，但無照片。'},
+  ]
+},
+{
+  id:'stat', college:'商學院', name:'統計學系',
+  url:'https://stat.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:57, d1:9, d2:10, d3:9, d4:6, d5:7, d6:11, d7:5,
+  highlights:[
+    '主導覽「招生」連結正常，指向 https://stat.fcu.edu.tw/apply/，頁面本身8個管道連結全數符合白名單',
+    'SAS認證課程頁（/sascert/）具體列出Tier 1／Tier 2兩級認證名稱、3門選修課程與大綱連結、申請流程，是本次少見的專業認證具體頁面',
+    '✅ 學生分享頁3位撰文者皆標註本系（逢甲大學統計學系／逢甲統計系）',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+    '系主任身分已於成員頁查明為李仁佑（信箱、分機完整）',
+  ],
+  pain_points:[
+    '⚠️（沿用既有發現）首頁 Hero 輪播中一張投影片連結指向 https://stat.fcu.edu.tw/%e6%8b%9b%e7%94%9f/（招生中文網址）已確認404——已查證此連結不在主導覽選單內，主導覽「招生」本身正常指向/apply/，扣分僅來自輪播過期連結',
+    '導覽選單完全沒有「產研」分類，與財務學系（pf）同為結構性缺少此區塊的個案',
+    '首頁無系主任歡迎文字或特色說明，僅通用標語「成為自己最想成為的人」，是本次全案例文案表現較弱的個案之一',
+    '綜覽頁與SAS認證頁均缺乏量化數字（學生人數、就業率、SAS通過人數、企業採認情況）',
+    '成員頁標題「親切的主任 熱情的組員 都在這兒」暗示應有照片，但系主任與組員皆無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '移除或更新首頁 Hero 輪播中連往 https://stat.fcu.edu.tw/%e6%8b%9b%e7%94%9f/ 的投影片，改連現行 /apply/ 頁',
+    '補系主任李仁佑具名歡迎文字（取代通用標語）',
+    'SAS認證頁補上歷年通過人數與企業採認案例，強化說服力',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://stat.fcu.edu.tw/',
+     notes:'項目二／一：本頁無系主任歡迎文字或特色說明，僅通用標語「成為自己最想成為的人」。項目四：Hero輪播中一張投影片連結404（詳見下方招生頁備註），主導覽本身正常，SEO description留空。'},
+    {name:'招生／apply', url:'https://stat.fcu.edu.tw/apply/',
+     notes:'項目四B：本頁8個管道連結全數符合白名單，且已查證主導覽「招生」正確指向本頁——真正的招生入口是正常的，扣分僅來自首頁 Hero 輪播的過期連結。'},
+    {name:'學習－學士專業／學士專業', url:'https://stat.fcu.edu.tw/學士專業/',
+     notes:'項目一：提及商業大數據組／市場決策組兩組別，但本頁未展開各組課程差異，僅連結「課程配當表」（registration.fcu.edu.tw/courseplan/）供進一步查詢。'},
+    {name:'學習－SAS認證課程／sascert', url:'https://stat.fcu.edu.tw/sascert/',
+     notes:'✅ 明確列出Tier 1商業分析專業／Tier 2進階商業分析專業兩級認證，3門選修課程及大綱連結、申請條件與流程，具體度高；⚠️缺歷年通過人數與企業採認情況。'},
+    {name:'師資／teachers', url:'https://stat.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（講座教授/特聘教授/專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://stat.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，最新至2026.06.10，共22頁新聞列表，內容豐富。'},
+    {name:'新聞與活動－學生分享／share-list', url:'https://stat.fcu.edu.tw/share-list/',
+     notes:'✅ 3位撰文者（梁璦麗、林于婷、洪齊駿）皆標註「逢甲大學統計學系」或「逢甲統計系」，確認為本系學生。'},
+    {name:'關於－歡迎／歡迎', url:'https://stat.fcu.edu.tw/歡迎/',
+     notes:'（與首頁同為關於／歡迎頁）內容需與成員頁李仁佑主任串接補齊具名歡迎文字。'},
+    {name:'關於－綜覽／綜覽', url:'https://stat.fcu.edu.tw/綜覽/',
+     notes:'⚠️ 缺乏具體數字，僅「培養數以千計的商學統計專業人才」等定性描述，成立年份、學生人數、就業率、SAS認證通過率均未提及。'},
+    {name:'成員／成員', url:'https://stat.fcu.edu.tw/成員/',
+     notes:'系主任李仁佑姓名、信箱（jylee@o365.fcu.edu.tw）、分機（4413）完整，但標題「親切的主任 熱情的組員」暗示應有照片，實際主任與組員皆無照片，內容與標題承諾不符。'},
+  ]
+},
+{
+  id:'econ', college:'商學院', name:'經濟學系',
+  url:'https://econ.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:63, d1:13, d2:11, d3:10, d4:6, d5:7, d6:11, d7:5,
+  highlights:[
+    '系主任吳紀瑩具名（歡迎頁與行政人員頁一致），三大課程領域（商業策略與數據分析、資料科學與大數據、永續經濟分析）定位清楚，並有英國艾塞克斯大學雙碩士機會',
+    '✅ 學生愛分享頁8位撰文者皆確認為本系學生，5大分類（國際移動/企業實習/跨域學習/社團成長/創新創業）清楚',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+    '站內連結掃描 0 個 404（含疑似異常的中文網址新聞頁，經查證均可正常開啟）',
+  ],
+  pain_points:[
+    '⚠️ 招生頁連結中有 1 個 slug（post-baccprogadmission1）不在本次白名單清單內——同一 slug 也在太空系統工程碩士學程／nze學士後淨零智慧永續學士班被發現，可能是白名單本身尚未收錄此管道，需與校級招生單位確認',
+    '導覽選單無「產研」分類，與財務學系（pf）、統計學系（stat）同為結構性缺少此區塊的個案',
+    '學士班專業頁與綜覽頁皆缺具體課程名稱與量化數字（成立年份、學生人數、就業率）',
+    '系主任於行政人員頁與歡迎頁皆無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '補系主任照片',
+    '確認 post-baccprogadmission1 slug 的正確性（與校級單位對照，econ／nze／space三系已知同樣受影響）',
+    '學士班專業頁補上具體課程名稱清單或課程地圖連結',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://econ.fcu.edu.tw/',
+     notes:'項目六即時性佳（近半年至少9則，最新至2026.06.10）。先前掃描疑似異常的中文網址新聞頁（如「經濟系專題海報競賽」）經正確編碼後查證均為200，非失效連結。SEO description留空。'},
+    {name:'招生／apply', url:'https://econ.fcu.edu.tw/apply/',
+     notes:'項目四B：9個管道連結中8個符合白名單，1個（post-baccprogadmission1）不在既有清單內，與太空系統工程碩士學程、nze學士後淨零智慧永續學士班同樣的 slug，建議與校級單位一次性確認並更新白名單。'},
+    {name:'學習（landing）／study', url:'https://econ.fcu.edu.tw/study/',
+     notes:'資訊樞紐頁，「學習是一輩子最幸福的事」標語，列出學士專業／碩士專業／企業參訪計畫三入口，本身非空白頁但無獨立課程內容。'},
+    {name:'學習－學士班專業／undergraduate', url:'https://econ.fcu.edu.tw/undergraduate/',
+     notes:'⚠️ 僅提及「法律經濟學分學程」與CDIO教學法，缺具體課程名稱清單；「A系進B系出」雙輔修彈性學制敘述清楚，但無課程地圖直接連結。'},
+    {name:'師資／teachers', url:'https://econ.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（講座教授/特約講座/特聘教授/專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://econ.fcu.edu.tw/share-list/',
+     notes:'✅ 8位撰文者（江晨毓、汪厚樺、方家齊、黃浩禎、陳巧芸、徐光志、周祐任、彭志偉）皆確認為本系學生，5大分類（國際移動/企業實習/跨域學習/社團成長/創新創業）清楚。'},
+    {name:'關於－主任的話／welcoming', url:'https://econ.fcu.edu.tw/welcoming/',
+     notes:'系主任吳紀瑩具名，「多方位的邏輯思考」開場、三大課程領域定位清楚，並提及英國艾塞克斯大學雙碩士機會。缺口：無具體數字（畢業率、就業率、薪資水準），無主任照片。'},
+    {name:'關於－綜覽／overview', url:'https://econ.fcu.edu.tw/overview/',
+     notes:'⚠️ 缺乏成立年份、學生人數、就業率等具體數字，僅「格外重視科學方法，以期能將理論與實務結合」等定性描述及個體/總體經濟學課程概述。'},
+    {name:'關於－行政人員／coworker', url:'https://econ.fcu.edu.tw/coworker/',
+     notes:'系主任吳紀瑩（副教授兼系主任）電話（04-24517250#4491）、信箱（chiyinwu@fcu.edu.tw）完整，2位行政助理業務範圍分工清楚，但主任無照片。'},
+  ]
+},
+{
+  id:'ba', college:'商學院', name:'企業管理學系',
+  url:'https://ba.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:73, d1:15, d2:12, d3:13, d4:6, d5:7, d6:15, d7:5,
+  highlights:[
+    '本次商學院最高分：系主任張秀樺具名，AACSB 認證具體稀缺性論述（「台灣第九所、中部第一所」「全球僅5%具備」，2014/2019兩度通過認證）具說服力，並具名陽信銀行、台中商銀、玉山銀行等實習合作企業',
+    '✅（修正並擴充）招生頁實際16個管道（本國生6＋境外生4＋碩士本國生2＋碩士境外生4，含陸生招聯會）全數符合白名單，管道數量全商學院最多',
+    '產學與研究頁與環境頁具名2間教學實驗室（企業電子化實驗室／產業競爭力實驗室）＋2個研究中心（企業資訊系統研究中心／企業風險研究中心）＋具名學刊（臺灣企業績效學刊），是本次商學院研究資訊最完整的個案',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+  ],
+  pain_points:[
+    '產學與研究頁雖列出實驗室與研究中心名稱，但「研究成果報導」「產學合作」子項仍為空泛文案，缺具體成果或合作案例細節',
+    '學士班頁與綜覽頁皆缺具體課程名稱與量化數字（成立年份、學生人數、就業率）',
+    '系主任於成員頁與歡迎頁皆無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '補系主任照片',
+    '產學與研究頁「研究成果報導」補上具體論文/專案標題，讓已具名的實驗室與研究中心有實質內容支撐',
+    '綜覽頁補上量化數字（學生人數、就業率）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://ba.fcu.edu.tw/',
+     notes:'項目六即時性佳（近半年至少9則，最新至2026.06.10）。項目七 SEO description 留空。'},
+    {name:'招生／apply', url:'https://ba.fcu.edu.tw/apply/',
+     notes:'✅（修正並擴充先前12個管道的記錄）本國生6管道＋境外生4管道＋碩士本國生2管道＋碩士境外生4管道（含陸生招聯會），共16管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統，是全商學院管道數量最多且合規度最佳的個案。'},
+    {name:'學習－學士班／undergraduate', url:'https://ba.fcu.edu.tw/undergraduate/',
+     notes:'⚠️ 提及「商業分析＆營運決策」特色定位，但缺具體課程名稱清單，「課程設計與規劃」連結未內嵌課程地圖。'},
+    {name:'產學與研究／research', url:'https://ba.fcu.edu.tw/research/',
+     notes:'✅ 具名2間教學實驗室（企業電子化實驗室／產業競爭力實驗室）＋2個研究中心（企業資訊系統研究中心／企業風險研究中心），另有具名學刊「臺灣企業績效學刊」與「本系計畫執行一覽表」頁；⚠️「研究成果報導」「產學合作」子項仍為空泛文案，未列具體成果或合作企業。'},
+    {name:'關於－環境／環境', url:'https://ba.fcu.edu.tw/環境/',
+     notes:'✅ 與產研頁一致列出企業電子化實驗室、產業競爭力實驗室，另有「研究學習創新場域」（商學大樓新場域），惟缺位置、開放時間等使用細節。'},
+    {name:'師資／faculty', url:'https://ba.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（講座教授/特約講座/特聘教授/專任教授/副教授/助理教授、兼任助理教授/講師）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://ba.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，最新至2026.06.10。'},
+    {name:'關於－歡迎／greeting', url:'https://ba.fcu.edu.tw/greeting/',
+     notes:'系主任張秀樺具名署名（「張秀樺 敬上」），AACSB認證「台灣第九所、中部第一所」「全球僅5%具備」稀缺性論述具說服力，並具名陽信銀行、台中商銀、玉山銀行等實習合作企業，但無主任照片，缺量化就業成果數字。'},
+    {name:'關於－綜覽／about', url:'https://ba.fcu.edu.tw/about/',
+     notes:'⚠️ 缺乏成立年份、學生人數、就業率等具體數字，僅「逢甲企管歷史悠久，師資完善、課程多元」等定性描述。'},
+    {name:'成員／staff', url:'https://ba.fcu.edu.tw/staff/',
+     notes:'系主任張秀樺姓名、信箱（hshchang@fcu.edu.tw）、分機（4614）完整，但無照片。'},
+  ]
+},
+{
+  id:'biba', college:'商學院', name:'國際企業管理英語碩士學位學程',
+  url:'https://biba.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:66, d1:14, d2:12, d3:8, d4:6, d5:7, d6:14, d7:5,
+  highlights:[
+    '雙聯學位頁具體列出11所合作大學＋1所洽談中，涵蓋澳洲/美國/英國/法國4國，逐校附排名認證、學制方案（3+1雙學士/3+2學士碩士）、GPA與英語成績門檻，是本次全案例雙聯資訊最完整的個案',
+    '學程主任黃瓊如具名，「3張國際證照」「3&3+N+J」願景框架具體，前三年逢甲上課、第四年海外修業的4年學制敘述清楚',
+    '✅ 學生愛分享頁3位撰文者皆標註「國際企業管理全英語學士學位學程」，確認為本學程學生',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+  ],
+  pain_points:[
+    '🚩【重要缺失，修正先前「5個管道全數符合白名單」的誤判】招生頁本國生3管道＋境外生2管道，全數指向 fcu.edu.tw 籠統總覽頁或 freshman/oia 子站入口，未見任何 www.fcu.edu.tw/recurit_list/ 白名單連結',
+    '⚠️ 系名疑義：儀表板記錄為「國際企業管理英語碩士學位學程」，但網站內容（學生愛分享標籤、「大學前三年在逢甲上課，第四年前往國外修業」等）明確顯示這是學士學位學程而非碩士，建議確認正式系名並更正',
+    '學程綜覽頁提及「與超過25個國家的外籍學生共同學習」但無具體在學人數或國際生比例統計',
+    '學士專業頁缺具體課程名稱清單，僅泛稱「跨國國際管理專業之整合」',
+    '學程主任於辦公室成員頁與歡迎頁皆無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '確認正式系名（學士 vs 碩士）並更正儀表板記錄',
+    '招生頁補上白名單連結，或確認本學程是否有專屬招生管道頁',
+    '學程綜覽頁補上在學人數、國際生比例等具體數字',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://biba.fcu.edu.tw/',
+     notes:'項目六即時性佳（近半年至少9則，最新至2026.06.10）。項目七 SEO description 留空。'},
+    {name:'招生／apply', url:'https://biba.fcu.edu.tw/apply/',
+     notes:'🚩（修正先前誤判）本國生3管道（繁星/申請/分發）＋境外生2管道（外國學生秋季班/僑港澳單招），共5管道全數指向 fcu.edu.tw 通用招生頁或 freshman.fcu.edu.tw／oia.fcu.edu.tw 子站入口，未見 recurit_list 白名單連結。'},
+    {name:'學習－學士專業／undergraduate', url:'https://biba.fcu.edu.tw/undergraduate/',
+     notes:'⚠️ 僅泛稱「跨國國際管理專業之整合」「全球化商業環境」，無具體課程名稱，「課程設計與規劃」連至 /curriculum/ 頁但本頁未內嵌課程地圖。確認「大學前三年在逢甲上課，第四年前往國外修業」為4年制學士學程結構，與12所海外商學院對接。'},
+    {name:'學習－雙聯學位／doubledegreeschools', url:'https://biba.fcu.edu.tw/doubledegreeschools/',
+     notes:'✅ 11所合作大學（澳洲2/美國2/英國4/法國3）＋1所洽談中，逐校附排名認證、3+1雙學士或3+2學士碩士學制、GPA與英語門檻，資訊完整度為本次全案例最佳。'},
+    {name:'師資／faculty', url:'https://biba.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（專任教授/副教授/助理教授、兼任助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://biba.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，最新至2026.06.10。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://biba.fcu.edu.tw/share-list/',
+     notes:'✅ 3位撰文者（林宏翰-歐洲創新學院葡萄牙賽事、周煥凱-Temple大學學生大使、陳貞儀-社團成長）皆標註「國際企業管理全英語學士學位學程」，確認為本學程學生，惟系名與儀表板記錄的「碩士學位學程」不同。'},
+    {name:'關於－歡迎／welcome', url:'https://biba.fcu.edu.tw/welcome/',
+     notes:'學程主任黃瓊如具名署名，「Different but Better」定位清楚，「3張國際證照」（MPP／國際物流管理／國際專案管理）與「3&3+N+J」願景框架具體，但無主任照片。'},
+    {name:'關於－學程綜覽／about', url:'https://biba.fcu.edu.tw/about/',
+     notes:'⚠️ 提及「與超過25個國家的外籍學生共同學習」但無具體在學人數、國際生比例、成立年份等統計數字。'},
+    {name:'關於－辦公室成員／staff', url:'https://biba.fcu.edu.tw/staff/',
+     notes:'學程主任黃瓊如、副主任及2位助理聯絡資訊完整（分機4095/4096/4097，信箱cjhuang@fcu.edu.tw），但全體皆無照片。'},
+  ]
+},
+{
+  id:'bce', college:'商學院', name:'商學院學士學位學程',
+  url:'https://bce.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:68, d1:12, d2:13, d3:11, d4:6, d5:7, d6:14, d7:5,
+  highlights:[
+    '✅（修正先前「無主任具名歡迎文字」與「招生入口不易發現」的誤判）主導覽即有清楚「招生」入口，「認識本學程」頁學程主任黃琝琇具名署名且附照片——是本次商學院唯一在歡迎頁放置主任照片的個案',
+    '5個學制方向定位清楚（創意產業人才、社會創新創業、國際企業管理、商業實務、商業資訊應用），呼應「先進來後分流」的學程設計',
+    '30⁺大學學分學程頁具體：「文化藝術與經濟跨域學分學程」（17學分）與「投資策略與管理學分學程專班」皆具體列出課程內容與業界工具（CMoney系統、TEJ資料庫）',
+    '招生頁5個管道（甄審入學/申請入學/暑假轉學考/寒假轉學考/30⁺學分學程）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '✅ 校園新聞近半年至少9則，即時性佳',
+  ],
+  pain_points:[
+    '課程規劃頁僅提供歷年（107-114學年度）課程配當表PDF連結，無視覺化課程地圖或分流路徑圖，對「先進來後分流」機制的學生而言不夠直觀',
+    '認識本學程頁缺乏具體數字（成立年份、學生人數、5個學制方向各自的分流人數比例）',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '課程規劃頁補上視覺化的分流路徑圖，說明5個學制方向如何選擇與轉換',
+    '認識本學程頁補上具體數字（學生人數、各學制方向分流比例）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://bce.fcu.edu.tw/',
+     notes:'項目四A：主導覽清楚列出「招生」「認識本學程」「課程規劃」等入口，即時性佳（近半年至少9則）。SEO description留空。'},
+    {name:'招生／admissions', url:'https://bce.fcu.edu.tw/admissions/',
+     notes:'✅（修正先前「招生入口不易發現」的誤判，本次確認主導覽即有清楚「招生」連結）5個管道（甄審入學/申請入學/暑假轉學考/寒假轉學考/30⁺學分學程）全數指向 www.fcu.edu.tw/recurit_list/ 白名單子路徑（ce-interview/ce_apply/college_transfer等）。'},
+    {name:'學習－認識本學程／認識本系', url:'https://bce.fcu.edu.tw/認識本系/',
+     notes:'✅（修正先前「無主任具名歡迎文字」的誤判）學程主任黃琝琇具名且附照片，5個學制方向（創意產業人才/社會創新創業/國際企業管理/商業實務/商業資訊應用）列舉清楚，但缺成立年份、學生人數等具體數字。'},
+    {name:'學習－課程規劃／課程規劃', url:'https://bce.fcu.edu.tw/課程規劃/',
+     notes:'⚠️ 提供107-114學年度課程配當表PDF連結，但為行政表格而非視覺化課程地圖，缺分流路徑或先修關係圖。'},
+    {name:'學習－30⁺大學學分學程／thirty-plus', url:'https://bce.fcu.edu.tw/thirty-plus/',
+     notes:'✅ 具體列出「文化藝術與經濟跨域學分學程」（17學分，涵蓋文物鑑賞/文學創意寫作/書畫藝術等）與「投資策略與管理學分學程專班」（採CMoney系統、TEJ資料庫等業界工具，雙軌學術與業界師資），是本次少見的跨域學分學程具體案例。'},
+    {name:'師資／teachers', url:'https://bce.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（專任教授/客座教授/副教授/助理教授、兼任副教授/助理教授）。'},
+    {name:'校園新聞／news-list', url:'https://bce.fcu.edu.tw/news-list/',
+     notes:'✅ 項目六：近半年至少9則，最新至2026.06.10。'},
+  ]
+},
+{
+  id:'id', college:'商學院', name:'學士設計學士學位學程',
+  url:'https://id.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正）', evaluated:true,
+  overall:58, d1:9, d2:13, d3:5, d4:6, d5:8, d6:13, d7:4,
+  highlights:[
+    '✅ 校園新聞為本系自有內容（非校級通用新聞），近半年至少6則且全部集中於2026年6月，是本次全案例即時性最佳個案之一',
+    '教學場域具名4項特色設施（樂樂學堂AI室內設計體驗場域、ROSO數位製造合作社、IN SENCE LAB感知實驗室、XR實驗室）',
+    '師生作品頁列出8個具體設計案例（如「福倉埕藝」桃園公設室內設計案、逢甲建築小書屋偏鄉播種計畫）',
+    '國際移動頁具體列出3+1雙聯學位＋4項國際工作營（江南城鄉建築、萊特建築學院、維也納科技大學都市研究、西班牙當代建築），2025年新增與義大利5校洽談交流',
+  ],
+  pain_points:[
+    '🚩【重要缺失，沿用既有發現】全站（含首頁、學習、師資等所有導覽分類）找不到任何招生／admission連結或文字，是本次全案例中少數「連招生入口本身都不存在」的個案（多數其他案例是招生頁存在但連錯系統）',
+    '「室設師資」頁完全未具名系所負責人姓名，亦無照片，僅有系所通用聯絡方式（電話/信箱），是本次唯一連負責人姓名都缺席的師資頁',
+    '導覽選單存在「最新消息」與「最新消息test」重複項目（皆指向同一頁面），為明顯的開發測試殘留未清理',
+    '課程規劃頁僅提供PDF課程配當表，無視覺化課程地圖',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '🚩 優先建立招生入口頁面並連往校級 recurit_list 系統，這是本次全案例中少數「完全無招生入口」的個案',
+    '移除導覽選單中重複的「最新消息test」項目',
+    '室設師資頁補上負責人姓名與照片',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://id.fcu.edu.tw/',
+     notes:'🚩項目四B：已雙重查證（結構化原始碼掃描與WebFetch內容判讀皆確認）全站導覽選單無 apply／admission 頁面，亦無「招生」「報名」等關鍵字，僅提供電話與信箱。⚠️ 導覽選單「最新消息」與「最新消息test」重複指向同一網址，為測試殘留。SEO description留空。'},
+    {name:'學習－課程規劃／programme', url:'https://id.fcu.edu.tw/programme/',
+     notes:'⚠️ 六項教育目標（PEO1-PEO6）與核心能力（A-F）架構清楚，但課程細節僅以111-113學年度課程配當表PDF呈現，無視覺化課程地圖或學期別分解。'},
+    {name:'學習－教學場域／classroom', url:'https://id.fcu.edu.tw/classroom/',
+     notes:'✅ 具名4項特色設施（樂樂學堂AI室內設計體驗場域、ROSO數位製造合作社、IN SENCE LAB感知實驗室、XR實驗室），但缺各設施的設備清單與教學應用情境說明。'},
+    {name:'職涯發展／announcements-detail', url:'https://id.fcu.edu.tw/announcements-detail/',
+     notes:'雖網址為通用公告模板（無id參數），但已查證內容為有效的職涯發展頁面，說明畢業出路多元性（平面設計/藝術創作/創業）與建築系/景觀系/土木系的專業區別，非空白或錯誤頁面。'},
+    {name:'國際移動／international', url:'https://id.fcu.edu.tw/international/',
+     notes:'✅ 3+1雙聯學位＋4項國際工作營具體列出（江南城鄉建築2學分/萊特建築學院6學分/維也納科技大學2學分/西班牙當代建築2學分），2025年新增與義大利5校洽談交流，惟未列出雙聯學位的具體合作校名。'},
+    {name:'師生作品／result', url:'https://id.fcu.edu.tw/result/',
+     notes:'✅ 8個具體設計案例（福倉埕藝桃園公設室內設計案、逢甲建築小書屋偏鄉播種計畫-媽厝小書屋、樂漁安居望年迴廊等），但頁面本身未顯示學生姓名或獲獎紀錄，需點入各案例才能查看。'},
+    {name:'室設師資／室設師資', url:'https://id.fcu.edu.tw/室設師資/',
+     notes:'🚩 未具名系所負責人姓名，無照片，僅系所通用聯絡方式（電話#3301、archschool@fcu.edu.tw），是本次唯一連負責人姓名都缺席的師資／關於頁面。'},
+    {name:'關於／events-list', url:'https://id.fcu.edu.tw/events-list/',
+     notes:'雖網址為活動列表模板，但已查證實際顯示逢甲建築學院系所介紹（院長黎淑婷教授研究領域、OPEN LOOP大學/ROSO數位製造/A-VR實驗室等特色），內容與「關於」標籤相符，非誤植連結。'},
+    {name:'最新消息／news', url:'https://id.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，全數集中於2026年6月（6/6-6/27），為本系自有新聞而非校級通用新聞，是本次全案例即時性最佳個案之一。'},
+  ]
+},
+{
+  id:'bm', college:'商學院', name:'商學專業碩士在職學位學程',
+  url:'https://www.bm.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正，並確認技術架構）', evaluated:true,
+  overall:60, d1:10, d2:12, d3:12, d4:6, d5:3, d6:13, d7:4,
+  highlights:[
+    '✅（技術架構已確認）本站實際架設於 Google Sites 平台（HTTP回應標頭 Server: ESF、CSP指向google-admin.corp.google.com，確認為Google Sites而非疑似），這解釋了先前掃描的連結誤判——並非本站有實際404問題',
+    '✅（修正先前保守估計）師資陣容頁17位教師（院長及主任2位、客座/講座教授3位、專家教授5位、專任教授7位）全數附照片，是本次全案例中唯一教師頁「全員皆有照片」的個案',
+    '✅ 招生資訊頁具體度高：34名在職生名額、書面資料50%＋面試50%評分比例、線上報名系統直接連結、面試時間表/錄取名單查詢/簡章PDF等多項具體連結，任務完成度佳',
+    '首頁展示具體成果：「商碩10位學長姊通過第27期ESG企業永續管理師認證考試」',
+  ],
+  pain_points:[
+    '🚩 新聞快訊近半年（2026-01-15後）僅1-2則，最新一則為2026.04.18，是本次全案例即時性最弱個案之一',
+    '學程介紹頁未具名學程主任姓名（僅wjhuang@fcu.edu.tw信箱），亦缺成立年份、學生人數等統計數字',
+    'Google Sites平台本身無法比照WordPress站設定傳統SEO meta標籤，技術上難以最佳化搜尋引擎呈現',
+  ],
+  quick_fixes:[
+    '新聞快訊補上近期活動報導，改善即時性',
+    '學程介紹頁補上主任具名署名',
+    '評估是否將站台遷移至校級WordPress平台，以統一SEO與品牌呈現',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://www.bm.fcu.edu.tw/',
+     notes:'✅ 技術架構確認為Google Sites（非WordPress），先前curl掃描的15個「404」實為sitemap類路徑誤判，非頁面實際失效。首頁展示「商碩10位學長姊通過第27期ESG企業永續管理師認證考試」具體成果。'},
+    {name:'招生資訊', url:'https://www.bm.fcu.edu.tw/招生資訊',
+     notes:'✅ 具體度高：報名期間114/11/2-115/3/10、34名在職生名額、書面資料50%＋面試50%評分、2場招生說明會（114/11/23、115/1/24），並有線上報名、面試時間表、錄取名單查詢、簡章PDF等多項直接可用連結。'},
+    {name:'學程介紹', url:'https://www.bm.fcu.edu.tw/學程介紹',
+     notes:'⚠️ 未具名學程主任姓名或照片（僅email聯絡方式），30畢業學分（24學分課程+6學分論文）具體，但缺成立年份、學生人數等統計數字。'},
+    {name:'師資陣容', url:'https://www.bm.fcu.edu.tw/師資陣容',
+     notes:'✅（修正先前保守估計）17位教師（院長及主任2位/客座講座教授3位/專家教授5位/專任教授7位）皆附照片、姓名、專長、信箱、分機，是本次唯一教師頁全員有照片的個案。'},
+    {name:'新聞快訊', url:'https://www.bm.fcu.edu.tw/新聞快訊',
+     notes:'🚩 近半年（2026-01-15後）僅1則明確標註日期的新聞（115.04.18文化參訪東勢客家文化園區），即時性明顯不足，是本次全案例最弱個案之一。'},
+  ]
+},
+{
+  id:'bphd', college:'商學院', name:'商學博士學位學程',
+  url:'https://www.bphd.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查修正，並確認技術架構）', evaluated:true,
+  overall:63, d1:9, d2:12, d3:12, d4:6, d5:6, d6:14, d7:4,
+  highlights:[
+    '✅（技術架構已確認，與bm同為Google Sites平台，非疑似）榮譽事蹟頁具名10位博士班學生/校友成就案例（如粘為鈞獲第26屆傑出校友、蕭方韋榮任台灣手工具工業同業公會副理事長），是本次商學院出路資訊最具體的個案之一',
+    '✅ 招生資訊具體度高：10名在職生名額、明確報名期程（115/3/27-4/27網路報名）、線上報名系統與招生簡章PDF直接連結、書面資料50%＋面試50%評分比例',
+    '師資陣容頁13位教師（含逢甲大學董事長高承恕講座教授）皆列具體研究專長與聯絡方式，多數附照片',
+    '最新消息近半年（2026-01-15後）約2-4則，最新至2026年7月，即時性尚可',
+  ],
+  pain_points:[
+    '學程介紹頁未具名學程主任姓名或照片，亦缺成立年份、學生人數、AACSB認證年份等統計數字',
+    'Google Sites平台本身無法比照WordPress站設定傳統SEO meta標籤，技術上難以最佳化搜尋引擎呈現',
+    '榮譽事蹟頁案例雖具名，但缺個人簡介、照片或延伸連結，說服力可再加強',
+  ],
+  quick_fixes:[
+    '學程介紹頁補上主任具名署名與AACSB認證年份等具體數字',
+    '評估是否將站台遷移至校級WordPress平台，以統一SEO與品牌呈現（與bm商學專業碩士在職學位學程同樣建議）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://www.bphd.fcu.edu.tw/',
+     notes:'✅ 技術架構確認與bm同為Google Sites平台（HTTP標頭Server: ESF一致），先前curl掃描誤判的404並非本站實際失效連結。'},
+    {name:'招生資訊', url:'https://www.bphd.fcu.edu.tw/招生資訊',
+     notes:'✅ 10名在職生名額，報名期程明確（115/3/27-4/27網路報名、4/28資料上傳、5/9面試），書面50%＋面試50%評分，並有招生網路報名系統與115學年度博士班招生簡章PDF直接連結。'},
+    {name:'學程介紹', url:'https://www.bphd.fcu.edu.tw/學程介紹',
+     notes:'⚠️ 未具名學程主任姓名或照片，教育目標與核心能力說明清楚，但缺成立年份、學生人數、AACSB認證年份等統計數字。'},
+    {name:'師資陣容', url:'https://www.bphd.fcu.edu.tw/師資陣容',
+     notes:'✅ 13位教師（含逢甲大學董事長高承恕講座教授）分類清楚（院長主任/講座教授/專家教授/專任教授），多數附照片、研究專長、信箱、分機。'},
+    {name:'最新消息', url:'https://www.bphd.fcu.edu.tw/最新消息',
+     notes:'近半年（2026-01-15後）約2-4則，含學位考試資格審查申請、校外參訪（茉莉花壇夢想館）、113級博士生日本京都海外移地教學（2026.04.11-15），最新至2026年7月，即時性尚可但非最佳。'},
+    {name:'榮譽事蹟', url:'https://www.bphd.fcu.edu.tw/榮譽事蹟',
+     notes:'✅ 具名10位學生/校友成就案例（粘為鈞111級獲第26屆傑出校友、賴志峰及高治中104級獲第23屆傑出校友、蕭方韋109級榮任台灣手工具工業同業公會副理事長等），有姓名與級別年份，但缺個人簡介或延伸連結。'},
+  ]
+},
+
+/* ── 金融學院 ── */
+{
+  id:'rmi', college:'金融學院', name:'風險管理與保險學系',
+  url:'https://rmi.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:72, d1:12, d2:13, d3:13, d4:6, d5:7, d6:15, d7:6,
+  highlights:[
+    '全台歷史最悠久：系主任張永郎歡迎頁具名，「本系自1963年成立至今已逾60年」「大中華地區最早設立」，並附初任薪資具體數字（碩士約4.7萬元／大學約3.6萬元，引自勞動部112年統計），是本次全案例出路薪資數據最具體的個案之一',
+    '招生頁15個管道（本國生5＋境外生7＋碩士3）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '✅ 校園新聞為本系自有內容（風險論壇、KPMG講座、產險經紀人演講等），非校級通用新聞，近半年至少6則',
+    '✅ 學生愛分享頁5位撰文者皆確認為本系學生',
+    'Hero輪播6張與長卡片輪播6張連結全數有效，首頁SEO description已填寫',
+  ],
+  pain_points:[
+    '產研頁「風險與保險事業研究中心」雖具名，但無教師研究清單、期刊題目或產學合作企業名稱，僅概括性敘述',
+    '學士專業頁課程模組（風險管理/保險/風險評估/人身保險/財產保險）具名但無個別課程說明',
+    '綜覽頁缺具體學生總人數、就業率百分比、金融證照考取率',
+    '系主任於歡迎頁與成員頁皆無照片',
+  ],
+  quick_fixes:[
+    '產研頁補上具名教師研究成果或近期產學合作企業案例',
+    '補系主任照片',
+    '綜覽頁補上學生人數、證照考取率等量化數字',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://rmi.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播6張（含2023新聞、UQ雙碩士合作、學士/碩士/招生/綜覽入口）與長卡片輪播6張（學士專業、課程地圖、企業實習、證照輔導課程、碩士專業、友站連結）皆為有效連結。SEO description已填寫。'},
+    {name:'招生／apply', url:'https://rmi.fcu.edu.tw/apply/',
+     notes:'✅ 項目四B：本國生5管道＋境外生7管道＋碩士3管道，共15管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統，管道數量為本次金融學院前段班。'},
+    {name:'學習－學士專業／undergraduate', url:'https://rmi.fcu.edu.tw/undergraduate/',
+     notes:'項目一：風險管理／保險兩大模組具名（風險評估、人身保險、財產保險、保險經營與管理），109學年度起新增金融科技課程呼應產業趨勢，並有「了解更多」連結至課程地圖（/curriculumu/），但本頁未列個別課程名稱。'},
+    {name:'產學與研究／research', url:'https://rmi.fcu.edu.tw/research/',
+     notes:'⚠️ 「風險與保險事業研究中心」具名但無研究主題或成果說明；「發表於國內外重要期刊及國際研討會」未具名教師或論文題目；「與各大產壽險公司簽訂產學合作備忘錄」未列企業名稱。'},
+    {name:'師資／teachers', url:'https://rmi.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://rmi.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，最新至2026.06.29，內容為本系自有（風險論壇、KPMG永續風險講座、保經公會演講、住宅地震保險說明），非校級通用新聞。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://rmi.fcu.edu.tw/share-list/',
+     notes:'✅ 5位撰文者（吳涵萱、張棋芳、洪婉容、鄭琇蔓、程怡蓁）皆標註「風險管理與保險學系」，確認為本系學生。'},
+    {name:'關於－歡迎／greeting', url:'https://rmi.fcu.edu.tw/greeting/',
+     notes:'系主任張永郎具名署名（「張永郎主任的話」），「1963年成立至今已逾60年」「大中華地區最早設立」歷史定位清楚，但無照片。'},
+    {name:'關於－綜覽／about', url:'https://rmi.fcu.edu.tw/about/',
+     notes:'✅ 1963年成立（銀行保險學系保險組，大中華地區最早設立）、碩士班1班＋大學部2班規模、初任薪資具體數字（碩士約4.7萬元／大學約3.6萬元），但缺學生總人數、就業率百分比、證照考取率。'},
+    {name:'成員／staff', url:'https://rmi.fcu.edu.tw/staff/',
+     notes:'系主任張永郎姓名、分機（4128）、信箱（yunlchang@fcu.edu.tw）完整，但無照片。'},
+  ]
+},
+{
+  id:'fina', college:'金融學院', name:'財務金融學系',
+  url:'https://fina.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:60, d1:9, d2:10, d3:11, d4:6, d5:7, d6:12, d7:5,
+  highlights:[
+    '沿革具體：1963年銀行保險學系銀行組成立、1995年財務金融學系成立、2000年財金所成立',
+    '課程考照地圖頁具畢業門檻具體要求（C級金融證照兩張或B級以上一張），並列4門對應課程（財富管理/金融職涯與證照規劃/金融服務創新與數據分析/銀行授信管理）',
+    '招生頁11個管道（本國生5＋境外生6）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '✅ 學生愛分享頁6位撰文者皆確認為本系學生',
+  ],
+  pain_points:[
+    '⚠️ 導覽選單無「歡迎」或「主任的話」項目，「關於」頁本身未具名系主任——經查主任為陳麗君副教授（成員頁有完整資料），建議串接補齊',
+    '課程考照地圖頁缺具體證照名稱清單（如CFP、CFA、證券商業務員等）與通過率統計，僅列課程名稱與門檻規則',
+    '導覽選單無「產研」分類，與財務學系（pf）、統計學系（stat）等同為結構性缺少此區塊的個案',
+    '關於頁缺學生人數、就業率等統計數字',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '「關於」頁補上系主任陳麗君具名歡迎文字',
+    '課程考照地圖頁補上具體證照名稱與通過率',
+    '首頁補上 SEO description',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://fina.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播3張（YouTube影片、UQ雙碩士合作、學士專業）與長卡片輪播4張（跨領域學習、學士專業、課程地圖、碩士專業）皆為有效連結，但輪播張數偏少。SEO description留空。'},
+    {name:'招生（學士）／apply-undergraduate', url:'https://fina.fcu.edu.tw/apply-undergraduate/',
+     notes:'✅ 項目四B：本國生5管道＋境外生6管道，共11管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統。'},
+    {name:'學習－課程考照地圖／financial-license-map', url:'https://fina.fcu.edu.tw/financial-license-map/',
+     notes:'⚠️ 有具體畢業門檻（C級證照兩張或B級以上一張）與4門對應課程名稱，但缺個別證照名稱清單與歷年通過率，屬入門性說明而非完整地圖。'},
+    {name:'師資／teachers', url:'https://fina.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特聘教授/專任教授/副教授/助理教授、兼任教授/助理教授/講師）。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://fina.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，最新至2026.07.03，其中3則為本系專屬（統一投信基金理財課程、元大投信AI資產管理課程等），另3則為校級通用新聞。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://fina.fcu.edu.tw/share-list/',
+     notes:'✅ 6位撰文者（高昕慈、王亮云、黃姵瑄、張方瑜、陳芃羽、羅健豪）皆標註「文｜財務金融學系」，確認為本系學生。'},
+    {name:'關於／about', url:'https://fina.fcu.edu.tw/about/',
+     notes:'⚠️ 未具名系主任，僅系所沿革（1963年銀行保險學系銀行組成立、1995年財務金融學系成立、2000年財金所成立）與教育目標，缺學生人數、就業率統計數字。'},
+    {name:'成員／staff', url:'https://fina.fcu.edu.tw/staff/',
+     notes:'系主任陳麗君（副教授兼系主任）姓名、分機（4155）、信箱（lijiunchen@mail.fcu.edu.tw）完整，但無照片。'},
+  ]
+},
+{
+  id:'bpfeas', college:'金融學院', name:'財務工程與精算學士學位學程',
+  url:'https://bpfeas.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:67, d1:10, d2:12, d3:12, d4:6, d5:7, d6:15, d7:5,
+  highlights:[
+    '稀缺性認證具體：全台唯一UCAP-AC科系，「截至2023年，全球僅有141間獲得UCAP-AC以上認證」，2013年成立',
+    '學生分享頁「Yao念祖」明確標註「年薪百萬的精算師為目標」，歡迎頁提及「新鮮人起薪就逼近5萬」，出路薪資敘述具體度為本次金融學院前段班',
+    '招生頁10個管道（本國生4＋境外生6）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '✅ 校園新聞近半年6則中4則為本系專屬（精算模組CDIO成果發表、系友分享精算職涯、財務工程深碗專題、與馬來西亞國立大學交流）',
+    '✅ 學生分享頁5位撰文者皆確認為本系學生',
+  ],
+  pain_points:[
+    '金牌精算師頁僅陳述「全台唯一UCAP-AC」等機構認證，缺具體考取精算師人數、具名學生案例或通過率統計，屬宣傳性質而非實績佐證',
+    '歡迎頁未具名學程負責人署名——經查為馮詩蘋副教授兼系主任（成員頁有完整資料），建議串接補齊',
+    '綜覽頁缺學生人數、就業率統計數字',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '金牌精算師頁補上具體考取人數與具名學生案例',
+    '歡迎頁補上系主任馮詩蘋具名署名',
+    '首頁補上 SEO description',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://bpfeas.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播6張（含學生分享案例、學士專業、系友獲獎新聞、UQ雙碩士合作）與長卡片輪播4張（含1個301重定向的舊網址/undergraduate/，非失效連結）皆為有效連結。SEO description留空。'},
+    {name:'招生／admissions', url:'https://bpfeas.fcu.edu.tw/admissions/',
+     notes:'✅ 項目四B：本國生4管道＋境外生6管道，共10管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統。'},
+    {name:'學習－金牌精算師／goldmedalactuary', url:'https://bpfeas.fcu.edu.tw/goldmedalactuary/',
+     notes:'⚠️ 「全台唯一UCAP-AC科系」「全球僅141間獲認證」機構層級稀缺性論述具體，但無考取精算師具體人數、具名學生案例或通過率，屬宣傳性質。'},
+    {name:'師資／faculty', url:'https://bpfeas.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（特聘教授/專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://bpfeas.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，最新至2026.06.25，其中4則為本系專屬（精算模組CDIO成果發表會、系友吳奇螢分享精算職涯、財務工程深碗專題成果發表、馬來西亞國立大學交流）。'},
+    {name:'新聞與活動－學生分享／students-stories', url:'https://bpfeas.fcu.edu.tw/students-stories/',
+     notes:'✅ 5位撰文者（Yao念祖、呂東憲、戴紹廷、黃纓棋、黃佳琦）皆標註本學程，確認為本系學生，Yao念祖分享明確提及「年薪百萬的精算師為目標」。'},
+    {name:'關於－歡迎／welcome', url:'https://bpfeas.fcu.edu.tw/welcome/',
+     notes:'⚠️ 未具名署名，內文提及「新鮮人起薪就逼近5萬」「未來薪水還比醫師還高」等具體/比較性薪資敘述，但缺說話者姓名與照片。'},
+    {name:'關於－綜覽／about', url:'https://bpfeas.fcu.edu.tw/about/',
+     notes:'✅ 2013年成立、北美精算學會UCAP-AC認證資格明確，但缺學生人數、就業率統計數字。'},
+    {name:'成員／staff', url:'https://bpfeas.fcu.edu.tw/staff/',
+     notes:'系主任馮詩蘋（副教授兼系主任）姓名、分機（6110/6114）、信箱（spfeng@o365.fcu.edu.tw）、專長（財務工程、風險管理）完整，但無照片。'},
+  ]
+},
+{
+  id:'upfc', college:'金融學院', name:'金融學院學士班',
+  url:'https://upfc.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:55, d1:7, d2:10, d3:10, d4:6, d5:7, d6:10, d7:5,
+  highlights:[
+    '分流方向清楚：大一不分系探索期後，可選擇財務金融學系（投資/資本市場/企業財務）、風險管理與保險學系（風險評估/保險規劃）、財務工程與精算學士學位學程（精算科學/金融數學）三系',
+    '招生頁3個管道（繁星/申請/分發）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '✅ 學生愛分享頁8位撰文者皆確認為本班學生（依分流後所屬系所標註：財金/風保/財精），非資料錯置——因本班為大一不分系性質，內容與分流後系所共用屬合理設計',
+    '✅ 校園新聞近半年至少6則',
+  ],
+  pain_points:[
+    '歡迎頁未具名署名——經查主任為謝依婷副教授（成員頁有完整資料），建議串接補齊',
+    '學系分流頁僅說明「一年探索期」與三個分流方向，未具體說明分流條件（如成績門檻）或確切分流時間點',
+    '關於頁缺成立年份、學生人數等統計數字',
+    '首頁Hero/長卡片輪播張數偏少（各僅3-4張）',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '歡迎頁補上系主任謝依婷具名署名',
+    '學系分流頁補上具體分流條件（成績門檻/志願序規則）與確切時間點',
+    '關於頁補上學生人數等統計數字',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://upfc.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播3張與長卡片輪播4張皆為有效連結，但張數偏少。SEO description留空。'},
+    {name:'招生／apply', url:'https://upfc.fcu.edu.tw/apply/',
+     notes:'✅ 項目四B：3個管道（繁星/個人申請/考試分發）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統，管道數量因「先進來後分流」性質偏少屬合理配置。'},
+    {name:'學習－學系分流／stream', url:'https://upfc.fcu.edu.tw/stream/',
+     notes:'⚠️ 明確列出財務金融學系／風險管理與保險學系／財務工程與精算學士學位學程三個分流方向，並說明「提供一年探索期」，但未具體說明分流條件（成績門檻等）或確切分流時間點（大二開始？）。'},
+    {name:'師資／teachers', url:'https://upfc.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特聘教授/專任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://upfc.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，最新至2026.07.03，共12頁新聞內容，多為校級／金融學院通用新聞。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://upfc.fcu.edu.tw/share-list/',
+     notes:'✅ 8位撰文者（高昕慈、吳涵萱、王亮云、魏筱芩、張棋芳、黃姵瑄、張方瑜、姚念祖）皆標註分流後所屬系所（財務金融/風險管理與保險/財務工程與精算），因本班為大一不分系性質，與分流系所共用內容屬合理設計，非資料錯置。'},
+    {name:'關於－歡迎／welcome', url:'https://upfc.fcu.edu.tw/welcome/',
+     notes:'⚠️ 未具名署名，內容強調CDIO教學法、國際交流、企業實習等籠統敘述，缺量化數字佐證，無照片。'},
+    {name:'關於－綜覽／about', url:'https://upfc.fcu.edu.tw/about/',
+     notes:'⚠️ 「大一不分系學程」定位清楚，三個分流方向具名，但缺成立年份、學生人數等統計數字。'},
+    {name:'成員／staff', url:'https://upfc.fcu.edu.tw/staff/',
+     notes:'系主任謝依婷（副教授兼系主任）姓名、分機（4177）、信箱（ythsieh@fcu.edu.tw）完整，但無照片。'},
+  ]
+},
+{
+  id:'pmpf', college:'金融學院', name:'金融碩士在職學位學程',
+  url:'https://www.pmpf.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查，平台確認為Wix）', evaluated:true,
+  overall:55, d1:8, d2:12, d3:12, d4:6, d5:2, d6:10, d7:5,
+  highlights:[
+    '✅（平台已確認）本站架設於Wix平台（非WordPress），與同院其他系不同架構，但SEO description已填寫完整',
+    '招生資訊具體：32名不限科系名額、免筆試（書面50%＋面試50%）、明確報名期程（114/11/2-115/3/10），並有招生簡章PDF與錄取名單PDF直接連結',
+    '師資陣容頁13位教師皆附照片，依職稱及姓名筆劃排列',
+  ],
+  pain_points:[
+    '🚩 重要公告最新一則為2025年10月31日，距健檢日（2026-07-17）已逾8個月，近半年（2026-01-15後）內完全無新公告，是本次全案例即時性最弱個案之一',
+    '學程介紹頁未具名主任姓名或照片，亦缺成立年份、學生人數等統計數字',
+    '師資陣容頁未標示教師總人數，部分照片連結指向其他系所頁面（疑似合聘教師），完整性無法確認',
+  ],
+  quick_fixes:[
+    '🚩 優先更新重要公告頁，近半年完全無公告需立即處理',
+    '學程介紹頁補上主任具名署名與具體數字',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://www.pmpf.fcu.edu.tw/',
+     notes:'✅ 平台確認為Wix，SEO description已完整填寫（「逢甲金融碩士在職學位學程提供金融相關領域的從業人員應具備更為廣泛而多元的知識...」）。'},
+    {name:'招生資訊／admissions', url:'https://www.pmpf.fcu.edu.tw/admissions',
+     notes:'✅ 32名不限科系名額，免筆試（書面50%＋面試50%），報名期程明確（114/11/2-115/3/10網路報名、3/21面試），並有招生簡章PDF與錄取名單PDF直接連結。'},
+    {name:'學程介紹／fcupmpf', url:'https://www.pmpf.fcu.edu.tw/fcupmpf',
+     notes:'⚠️ 未具名主任姓名或照片，僅系辦聯絡資訊（分機6151），缺成立年份、學生人數等統計數字。'},
+    {name:'師資陣容／teachers', url:'https://www.pmpf.fcu.edu.tw/teachers',
+     notes:'✅ 13位教師皆附照片，依職稱及姓名筆劃排列，但未標示總人數，部分照片連結指向其他系所頁面（疑似合聘教師）。'},
+    {name:'重要公告／announcements', url:'https://www.pmpf.fcu.edu.tw/announcements',
+     notes:'🚩 最新公告為2025.10.31（114學年度研究生學位論文延後公開申請），近半年（2026-01-15後）內完全無新公告，明顯落在365天以上停滯區間。'},
+  ]
+},
+{
+  id:'fphd', college:'金融學院', name:'金融博士學位學程',
+  url:'https://www.fphd.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查，平台確認為Wix）', evaluated:true,
+  overall:55, d1:8, d2:12, d3:12, d4:6, d5:2, d6:10, d7:5,
+  highlights:[
+    '✅（平台已確認）本站架設於Wix平台，SEO description已填寫完整',
+    '招生資訊具體：4名名額、明確報名期程（115/3/27-4/27）、書面50%＋面試50%評分，考試入學連結指向 www.fcu.edu.tw/recurit_list/dr_exam/ 白名單，另有簡章PDF與網路報名系統直連',
+    '師資陣容頁12位教師皆附照片（含逢甲大學董事長），依職稱及姓氏筆畫排列',
+    '首頁輪播提及「賀陳主任獲教學傑出教師」，顯示主任姓陳，惟未見全名具名署名',
+  ],
+  pain_points:[
+    '🚩 全站無獨立新聞／公告區塊（導覽選單無「最新消息」或「重要公告」項目），首頁僅有「面試時間表(05/05公告)」等連結標題，無法判斷系統性更新頻率，是本次全案例結構性缺乏新聞機制的個案',
+    '學程介紹頁未具名主任全名或照片，頁尾雖有AACSB認證標誌，但未標示認證年份',
+    '學生事務等頁面仍待逐一複核細節',
+  ],
+  quick_fixes:[
+    '🚩 建議新增「最新消息」或「重要公告」導覽分類，讓招生生／在學生能追蹤學程動態',
+    '學程介紹頁補上主任全名具名署名與AACSB認證年份',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://www.fphd.fcu.edu.tw/',
+     notes:'🚩 項目六：確認首頁與全站導覽選單皆無獨立新聞／公告／最新消息區塊，僅有輪播圖片（如「賀陳主任獲教學傑出教師」）與「面試時間表(05/05公告)」等連結標題，無法逐則判斷更新日期。SEO description已填寫。'},
+    {name:'招生資訊／admissions', url:'https://www.fphd.fcu.edu.tw/admissions',
+     notes:'✅ 4名名額，報名期程明確（115/3/27-4/27網路報名、5/9面試），書面50%＋面試50%評分，考試入學連結指向 www.fcu.edu.tw/recurit_list/dr_exam/ 白名單，並有簡章PDF與網路報名系統直連。'},
+    {name:'學程介紹／fphd', url:'https://www.fphd.fcu.edu.tw/fphd',
+     notes:'⚠️ 未具名主任全名或照片，僅聯絡資訊（分機6151），頁尾AACSB認證標誌未標示認證年份。'},
+    {name:'師資陣容／faculty', url:'https://www.fphd.fcu.edu.tw/faculty',
+     notes:'✅ 12位教師皆附照片（含逢甲大學董事長至專任副教授），依職稱及姓氏筆畫排列，呈現一致。'},
+  ]
+},
+
+/* ── 人文社會學院 ── */
+{
+  id:'cl', college:'人文社會學院', name:'中國文學系',
+  url:'https://cl.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:54, d1:8, d2:10, d3:11, d4:6, d5:5, d6:9, d7:5,
+  highlights:[
+    '招生管道7/8個指向 www.fcu.edu.tw/recurit_list/ 白名單系統（學士班個人申請/繁星/考試分發3個＋碩博士班甄試/考試4個），僅四技二專儲蓄專戶連往通用頁',
+    '學術及產研成果頁具名4類產出（教師專書出版、《全臺詩》出版計畫、數位人文計畫、全亞基金會講座計畫），涵蓋範圍多元',
+    '系主任蕭堯仁具名於成員頁，聯絡資訊完整',
+    '未來就業頁列出8個具體出路領域（電子商務/媒體傳播/文教事業/華語教學/文創產業/出版事業/藝文創作/學術研究）',
+  ],
+  pain_points:[
+    '⚠️ 校園新聞（中文人News）近半年6則中僅2則為本系專屬（台中車站策展、學生獲MOS世界賽門票），其餘4則為全校性質新聞，本系特色新聞比例偏低',
+    '歡迎頁未具名主任署名——經查主任為蕭堯仁（成員頁有完整資料），建議串接補齊',
+    '學術及產研成果頁4類產出僅列類別名稱，缺具體書目、計畫題目或成果案例',
+    '未來就業頁8個出路領域皆為籠統敘述，無具名畢業生案例或就業率統計',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '歡迎頁補上系主任蕭堯仁具名署名',
+    '學術及產研成果頁補上具體書目或計畫題目清單',
+    '未來就業頁補上1-2則具名系友案例',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://cl.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播偵測到2張連結（Wix子站、新生家長專區），長卡片輪播5張（新生家長專區、課程專業、師資、跨領域創新學制、碩博專業）皆為有效連結，惟Hero張數偏少建議人工複核。SEO description留空。'},
+    {name:'招生資訊－學士班／apply_undergraduate', url:'https://cl.fcu.edu.tw/apply_undergraduate/',
+     notes:'✅ 個人申請/繁星推薦/大學入學考試分發3個管道指向 www.fcu.edu.tw/recurit_list/ 白名單系統，僅「四技二專儲蓄專戶」連往通用 www.fcu.edu.tw/apply/ 頁。'},
+    {name:'招生資訊－碩博士班／apply_graduate', url:'https://cl.fcu.edu.tw/apply_graduate/',
+     notes:'✅ 碩士班甄試/考試、博士班甄試/考試4個管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單子路徑（mastr_interview/mastr_exam/dr_interview/dr_exam）。'},
+    {name:'課程專業－學士專業／course_undergraduate', url:'https://cl.fcu.edu.tw/course_undergraduate/',
+     notes:'待複核課程具體度。'},
+    {name:'學習資源－學術及產研成果／學系亮點', url:'https://cl.fcu.edu.tw/學系亮點/',
+     notes:'⚠️ 具名4類產出（教師專書出版、《全臺詩》出版計畫、數位人文計畫、全亞基金會講座計畫），提及與中部地方政府及文化單位合作，但缺具體書目、計畫題目或成果案例，屬目錄性質而非成果展示。'},
+    {name:'學習資源－未來就業／future', url:'https://cl.fcu.edu.tw/future/',
+     notes:'⚠️ 列出8個出路領域（電子商務/媒體傳播/文教事業/華語教學/文創產業/出版事業/藝文創作/學術研究），但無具名畢業生案例、就業率或薪資統計，屬願景式敘述。'},
+    {name:'師資／teachers', url:'https://cl.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特約講座/專任教授/副教授/助理教授/講師、兼任教授/副教授/助理教授）。'},
+    {name:'中文人News／news', url:'https://cl.fcu.edu.tw/news/',
+     notes:'⚠️ 項目六：近半年至少6則，最新至2026.07.06，但僅2則為本系專屬（台中車站策展、學生獲MOS世界賽門票），其餘4則為全校性新聞，「逢甲精選」與「單位新聞」分類混合未清楚區隔。'},
+    {name:'關於本系－歡迎／歡迎', url:'https://cl.fcu.edu.tw/歡迎/',
+     notes:'⚠️ 未具名署名，內容為「在逢甲大學中國文學系開啟你的青春篇章」等勉勵性文字，強調文學/文化/AI整合課程特色，但無照片、無統計數據。'},
+    {name:'關於本系／intro', url:'https://cl.fcu.edu.tw/intro/',
+     notes:'⚠️ 「著重於理論與實用並重」等定性描述，未來出路方向與future頁重疊，缺成立年份、學生人數、就業率等具體數字。'},
+    {name:'行政團隊／成員', url:'https://cl.fcu.edu.tw/成員/',
+     notes:'系主任蕭堯仁姓名、信箱（yrshiau@fcu.edu.tw）、分機（#5500）完整，但無照片。'},
+  ]
+},
+{
+  id:'fll', college:'人文社會學院', name:'外國語文學系',
+  url:'https://fll.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:61, d1:12, d2:11, d3:9, d4:6, d5:7, d6:12, d7:4,
+  highlights:[
+    '系主任闕帝丰具名於歡迎頁與成員頁一致，「九十一學年度成立迄今」，9項具體措施＋「10+」第二外語課程（8類語種）具體度佳',
+    '✅ 校園新聞為本系專屬內容（教師教學專業成長社群演講、輔系雙主修名單、學生跨域作品展），非校級通用新聞，近半年至少6則',
+    '✅ 學生愛分享頁5位撰文者皆確認為本系學生',
+    '碩士班招生2個管道明確指向 www.fcu.edu.tw/recurit_list/ 白名單子路徑',
+  ],
+  pain_points:[
+    '🚩 首頁Hero輪播一張投影片連結網址本身含異常字元（尾端多出一個全形「／」，實際href為 `/news/111902/ ／`），已直接測試確認為404——已查證此連結位於首頁Hero輪播（非主導覽），為內容編輯時網址誤植所致',
+    '⚠️ 招生頁本國生學士班與境外生4個管道皆連往籠統的 www.fcu.edu.tw/apply/ 總覽頁，僅碩士班2管道明確指向白名單子路徑，白名單覆蓋率為本次人文社會學院已知案例中偏低者',
+    '產研頁僅列1項研討會（2024年第九屆英語文教學國際學術研討會），無教師研究成果、期刊發表或計畫具體內容',
+    '綜覽頁缺成立年份的西元對照、學生人數、就業率、多益成績等量化數字，僅有定性特色描述',
+    '系主任於歡迎頁與成員頁皆無照片',
+  ],
+  quick_fixes:[
+    '🚩 修正首頁Hero輪播該張投影片的網址（移除誤植的尾端全形／字元）',
+    '學士班與境外生招生管道補上白名單連結，比照碩士班做法',
+    '產研頁補上教師研究成果或期刊發表清單',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://fll.fcu.edu.tw/',
+     notes:'🚩 項目四A：Hero輪播6張中1張（news/111902/相關）實際href含誤植的尾端全形／字元，直接測試該確切網址回傳404；其餘5張（含2張學士/碩士入口、3則新聞）正常。長卡片輪播5張（課程地圖、畢業公演、企業實習、學士/碩士專業）皆有效。SEO description留空。'},
+    {name:'招生／apply', url:'https://fll.fcu.edu.tw/apply/',
+     notes:'⚠️ 項目四B：本國生學士班1管道＋境外生4管道（國際學生/僑港澳/海外聯招/陸生招聯）皆連往 www.fcu.edu.tw/apply/ 總覽頁，僅碩士班甄試／考試2管道明確指向 recurit_list 白名單子路徑，覆蓋率2/7偏低。'},
+    {name:'產研／學系亮點', url:'https://fll.fcu.edu.tw/學系亮點/',
+     notes:'⚠️ 僅列「2024逢甲大學第九屆英語文教學國際學術研討會」1項，無教師研究成果、期刊發表或計畫具體內容，內容單薄。'},
+    {name:'師資／faculty', url:'https://fll.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（專任教授/客座教授/副教授/助理教授、兼任教授/副教授/助理教授/講師）。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://fll.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，最新至2026.06.29，內容為本系專屬（教師教學專業成長社群演講、114學年度輔系雙主修名單、學生跨域作品展）。'},
+    {name:'新聞與活動－學生愛分享／share', url:'https://fll.fcu.edu.tw/share/',
+     notes:'✅ 5位撰文者（張楷、余紹琪、楊柔恩、彭怡惠、許安瑜）皆標註「外國語文學系」，確認為本系學生。'},
+    {name:'關於－歡迎／greeting', url:'https://fll.fcu.edu.tw/greeting/',
+     notes:'系主任闕帝丰具名署名，「九十一學年度成立迄今」，9項具體措施＋「10+」第二外語課程（8類語種）具體度佳，「小而美、精而實」定位清楚，但無照片。'},
+    {name:'關於－綜覽／about', url:'https://fll.fcu.edu.tw/about/',
+     notes:'⚠️ 「小而美、精而實」「彈性最大、就業最廣」等定性描述，缺成立年份西元對照、學生人數、就業率、多益成績等量化數字。'},
+    {name:'成員／staff', url:'https://fll.fcu.edu.tw/staff/',
+     notes:'系主任闕帝丰姓名、信箱（difeng.c@gmail.com）、分機（#5600,5618）完整，但無照片。'},
+  ]
+},
+{
+  id:'csi', college:'人文社會學院', name:'文化與社會創新碩士學位學程',
+  url:'https://csi.fcu.edu.tw/', eval_date:'2026-07-17（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:42, d1:6, d2:6, d3:8, d4:6, d5:5, d6:8, d7:3,
+  highlights:[
+    '文化資產與文物保存研究中心具名（2020年8月成立），說明整合AR/VR/AI新科技於文物鑑識與保存維護',
+    '招生頁報名連結指向 www.fcu.edu.tw/national_list/113mastr_exam/（校級白名單系統的另一變體，與acct等系相同做法），非籠統總覽頁',
+  ],
+  pain_points:[
+    '🚩【重要缺失】首頁Hero輪播原始碼確認：所有投影片的 `<a class="o-index-banner__slide">` 標籤完全沒有href屬性，點擊不會有任何反應——已直接檢視原始HTML確認，非工具偵測遺漏',
+    '🚩「學生愛分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生分享，完全沒有本學程學生投稿——是本次第5個確認案例（化工系、光電系、數據科學、nze學士後淨零智慧永續學士班皆中招），建議全校一次性排查',
+    '🚩 全站（歡迎頁與成員頁）皆未具名任何負責人姓名，僅提供學程共用電話（分機5652）與共用信箱（tpshing@fcu.edu.tw），是本次全案例中唯一連負責人姓名都完全找不到的個案',
+    '校園新聞為校級通用新聞（畢典、名譽博士、AI講座等），無任何本學程專屬活動報導',
+    '招生頁未列出具體招生名額或報考資格',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '🚩 修復首頁Hero輪播投影片的href連結，這是本次全案例中唯一「輪播完全無連結」的個案',
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第5個確認案例）',
+    '補上學程負責人具名資訊（姓名、職稱），取代目前的共用聯絡方式',
+    '招生頁補上具體名額與報考資格說明',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://csi.fcu.edu.tw/',
+     notes:'🚩 項目四A：原始碼檢視確認Hero輪播（o-index-banner__slide）所有 `<a>` 標籤皆無href屬性，點擊無反應，本次全案例中唯一輪播完全無連結的個案。長卡片輪播僅2張（招生、碩博士專業），皆有效但數量偏少。SEO description留空。'},
+    {name:'招生／admissions', url:'https://csi.fcu.edu.tw/admissions/',
+     notes:'⚠️ 報名連結指向 www.fcu.edu.tw/national_list/113mastr_exam/（校級白名單系統），非籠統總覽頁，但頁面本身未列出具體招生名額或報考資格細節，僅有學程宗旨說明與招生影片。'},
+    {name:'產學與研究／research-centers', url:'https://csi.fcu.edu.tw/research-centers/',
+     notes:'✅ 「文化資產與文物保存研究中心」具名（2020年8月成立），說明整合AR/VR/AI於文物鑑識與保存，但「產官學合作實戰單位」未列舉具體合作企業。'},
+    {name:'師資／teachers', url:'https://csi.fcu.edu.tw/teachers/',
+     notes:'待複核師資完整度。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://csi.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.10，但全為校級通用新聞（畢典、名譽博士、AI講座、離岸風電合作等），無任何本學程專屬活動報導。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://csi.fcu.edu.tw/share-list/',
+     notes:'🚩 已查證8篇文章撰文者分別來自經濟學系(1)、材料科學與工程學系(2)、資訊工程學系(2)、行銷學系(1)、機械與電腦輔助工程學系(1)，完全沒有本學程學生投稿，是本次第5個確認的資料來源錯置案例。'},
+    {name:'關於－歡迎／welcome', url:'https://csi.fcu.edu.tw/welcome/',
+     notes:'🚩 完全未具名負責人姓名或照片，僅「文化為體、地方為用」概念性說明，缺成立年份、學生人數等任何量化資訊。'},
+    {name:'成員／staff', url:'https://csi.fcu.edu.tw/staff/',
+     notes:'🚩 頁面僅列「辦公室人員」共用聯絡方式（分機5652、tpshing@fcu.edu.tw），未提供任何個人姓名或負責人身份，是本次唯一無法從成員頁查得負責人姓名的個案。'},
+  ]
+},
+
+/* ── 資訊電機學院 ── */
+{
+  id:'ee', college:'資訊電機學院', name:'電機工程學系',
+  url:'https://ee.fcu.edu.tw/', eval_date:'2026-07-23（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:65, d1:14, d2:10, d3:12, d4:6, d5:5, d6:13, d7:5,
+  highlights:[
+    '系主任謝振中具名署名（「電機工程學系教授兼系主任 謝振中 敬上」），「1974年創系至今已逾40餘個寒暑」「1992年成立碩士班」歷史沿革具體，5大課程領域列舉清楚',
+    '綜覽頁提及5間基礎實驗室＋20間研究實驗室＋3個中心，規模具體',
+    '招生頁5個管道（學士3＋碩士2）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '連續通過工程及科技教育認證（IEET）',
+  ],
+  pain_points:[
+    '🚩「學生愛分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生分享，完全沒有本系學生投稿——是本次第6個確認案例（化工系、光電系、數據科學、nze、csi文化與社會創新碩士學位學程皆中招），已跨足工程與科學學院、人文社會學院、資訊電機學院三個學院，建議校級網管一次性排查資料綁定邏輯',
+    '⚠️ 校園新聞近半年9則皆為校級通用新聞（招生績效、國際認證、畢業典禮），無任何本系專屬新聞露出，需點選「單位新聞」才能查閱',
+    '產研頁僅提供「研究中心」「產學合作」連結入口，未在本頁列出具名研究中心名稱或合作企業案例',
+    '成員頁未具名系主任姓名（僅系所地址與共用聯絡方式）——經查主任為謝振中（歡迎頁具名），建議串接補齊',
+    '綜覽頁缺成立年份西元對照（僅提及「逾40餘個寒暑」）、學生人數、就業率、IEET認證通過年份',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第6個確認案例，建議全校一次性排查）',
+    '成員頁補上系主任謝振中姓名與聯絡資訊，與歡迎頁串接',
+    '產研頁補上具名研究中心與合作企業案例',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://ee.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播2張（學士專業、2024新聞）與長卡片輪播6張（智慧能源與電力工程、5G/B5G天線、微波生醫工程、先進光電系統、半導體光電IC、學士專業）皆為有效連結，惟Hero張數偏少建議人工複核。SEO description留空。'},
+    {name:'招生／admissions', url:'https://ee.fcu.edu.tw/admissions/',
+     notes:'✅ 項目四B：學士班3管道＋碩士班2管道，共5管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統。'},
+    {name:'產研／產研', url:'https://ee.fcu.edu.tw/產研/',
+     notes:'⚠️ 僅提供「研究中心」「產學合作」連結入口本身，本頁未展示具名研究中心名稱、研究主題或合作企業案例，屬導航樞紐而非內容頁。'},
+    {name:'師資／teachers', url:'https://ee.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特約講座/特聘教授/專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://ee.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，但皆為「逢甲精選」「榮譽獲獎」類校級通用新聞，無本系專屬新聞，需另點「單位新聞」查閱。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://ee.fcu.edu.tw/share-list/',
+     notes:'🚩 已查證顯示經濟系（江晨毓）、材料系（葉馨、蘇庭恩）、資工系（林雨杭、楊孟憲、林楷祐）、行銷系（布施帆海）、機電系（蘇至生）等他系學生心得，完全沒有電機工程學系本系學生，是本次第6個確認的資料來源錯置案例。'},
+    {name:'關於－歡迎／歡迎', url:'https://ee.fcu.edu.tw/歡迎/',
+     notes:'系主任謝振中具名署名（「謝振中 主任」），1974年創系、1992年成立碩士班等歷史沿革具體，5大課程領域列舉清楚，並提及連續通過IEET認證，但無照片、無認證通過年份。'},
+    {name:'關於－綜覽／綜覽', url:'https://ee.fcu.edu.tw/綜覽/',
+     notes:'⚠️ 提及5間基礎實驗室＋20間研究實驗室＋3個中心，規模具體，但缺成立年份西元對照、學生人數、就業率、IEET認證通過年份。'},
+    {name:'成員／成員', url:'https://ee.fcu.edu.tw/成員/',
+     notes:'⚠️ 頁面僅系名、地址與共用聯絡方式，未具名系主任姓名——經查主任為謝振中（歡迎頁具名），成員頁與歡迎頁未串接。'},
+  ]
+},
+{
+  id:'fcuece', college:'資訊電機學院', name:'電子工程學系',
+  url:'https://fcuece.fcu.edu.tw/', eval_date:'2026-07-23（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:64, d1:14, d2:11, d3:9, d4:6, d5:5, d6:13, d7:6,
+  highlights:[
+    '系主任劉堂傑具名署名（「電子工程學系教授兼系主任 劉堂傑 敬上」），「2021年已邁入第五十年」「大學部與研究所畢業生將近七千人」歷史沿革與規模數字具體',
+    '首頁SEO description已填寫（通過中華工程教育學會工程教育認證）',
+    '長卡片輪播連結雖用舊網域 ece.fcu.edu.tw，但已確認會自動重定向至現行 fcuece.fcu.edu.tw，非失效連結',
+  ],
+  pain_points:[
+    '🚩「學生分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生（與同院電機工程學系ee呈現完全相同的錯置名單），是本次第7個確認案例，且與ee共用同一份錯誤名單，顯示此問題可能源自單一共用資料池而非各系獨立設定錯誤，建議校級網管優先排查資料來源機制',
+    '⚠️ 招生頁約50%管道（境外生2個管道與部分「了解更多」按鈕）連往籠統的 www.fcu.edu.tw/apply/ 總覽頁，僅本國生4管道與碩士2管道明確指向白名單',
+    '產研頁僅提供聯絡資訊與系統連結（專題管理、資源借用），未展示具名研究成果、重點實驗室細節或產學合作企業',
+    '綜覽頁提及「就業機會高」但無具體就業率百分比，亦缺學生人數統計',
+    '系主任於成員頁無照片',
+    '校園新聞近半年9則絕大多數為校級通用新聞，本系專屬露出極少',
+  ],
+  quick_fixes:[
+    '🚩 回報網管「學生分享」頁資料來源設定錯誤（第7個確認案例，且與ee共用同一錯誤名單，證據指向共用資料池問題）',
+    '境外生招生管道補上白名單連結，比照本國生做法',
+    '產研頁補上具名研究成果與重點實驗室介紹',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://fcuece.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播5張（歡迎頁、公告、2026新聞、傑出校友、碩士考試白名單連結）與長卡片輪播3張（企業實習、學士班、碩士班，經ece.fcu.edu.tw舊網域自動重定向）皆為有效連結。SEO description已填寫完整。'},
+    {name:'招生／apply', url:'https://fcuece.fcu.edu.tw/apply/',
+     notes:'⚠️ 項目四B：本國生4管道＋碩士2管道共6個指向 www.fcu.edu.tw/recurit_list/ 白名單，境外生2管道與多數「了解更多」按鈕則連往籠統的 www.fcu.edu.tw/apply/ 總覽頁，約半數合規。'},
+    {name:'產研／research', url:'https://fcuece.fcu.edu.tw/research/',
+     notes:'⚠️ 導覽選單雖有「重點實驗室」「設備資源」子項，但本頁僅提供聯絡資訊與系統連結（專題管理/資源借用），無具名研究成果或產學合作企業案例。'},
+    {name:'師資／faculty', url:'https://fcuece.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（特約講座/特聘教授/專任教授/副教授/助理教授/講師、兼任助理教授/講師）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://fcuece.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，但多為「逢甲精選」校級通用新聞（申請入學人數冠軍、畢典等），僅少數（如EUR-ACE工程認證）與本系直接相關。'},
+    {name:'新聞與活動－學生分享／share', url:'https://fcuece.fcu.edu.tw/share/',
+     notes:'🚩 已查證顯示經濟系（江晨毓）、材料系（葉馨、蘇庭恩）、資工系（林雨杭、楊孟憲、林楷祐）、行銷系（布施帆海）、機電系（蘇至生）等他系學生心得，與同院ee電機工程學系呈現完全相同名單，確認為第7個資料錯置案例，且證據指向共用資料池而非各系獨立錯誤。'},
+    {name:'關於－歡迎／welcome', url:'https://fcuece.fcu.edu.tw/welcome/',
+     notes:'系主任劉堂傑具名署名，「2021年已邁入第五十年」「畢業生將近七千人」歷史規模具體，但無照片。'},
+    {name:'關於－綜覽／綜覽', url:'https://fcuece.fcu.edu.tw/綜覽/',
+     notes:'⚠️ 「半導體與電子元件學程」「IC設計學程」課程方向清楚，「就業機會高」但無具體就業率百分比，缺成立年份與學生人數統計。'},
+    {name:'成員／staff', url:'https://fcuece.fcu.edu.tw/staff/',
+     notes:'系主任劉堂傑姓名、分機（4900/4965）、信箱（dgliu@o365.fcu.edu.tw）完整，但無照片。'},
+  ]
+},
+{
+  id:'auto', college:'資訊電機學院', name:'自動控制工程學系',
+  url:'https://auto.fcu.edu.tw/', eval_date:'2026-07-23（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:70, d1:10, d2:12, d3:13, d4:6, d5:8, d6:16, d7:5,
+  highlights:[
+    '重點研究頁具名12間實驗室並各附負責教授（如「先進控制與系統整合實驗室 林昱成」「醫學影像實驗室 劉益瑞」），分光機電、生物醫學兩大類，是本次全案例實驗室具名度最佳個案之一',
+    '✅ 校園新聞為本系專屬且亮點突出：連兩年全國AI智動化設備創作獎冠軍、成功取得歐洲工程教育認證EUR-ACE®標章、50+年系慶逾300位系友回娘家（2026.04.29）',
+    '招生頁11個管道（本國生5＋境外生6）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '系主任的話提及「逾四十年」創系史、「2008年起」通過IEET認證、「5+2創新產業政策」呼應，數字具體',
+  ],
+  pain_points:[
+    '🚩「學生愛分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生（與同院ee、fcuece呈現相同錯置名單），是本次第8個確認案例，進一步證實此問題源於資訊電機學院（或更大範圍）共用資料池，而非個別系所設定錯誤',
+    '重點實驗室頁（與重點研究頁不同的獨立子頁）內容空白，僅聯絡資訊，無任何具名實驗室或研究描述，與重點研究頁的豐富內容形成反差',
+    '系主任的話未具名署名——經查主任為廖本義（成員頁有完整資料），建議串接補齊',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第8個確認案例）',
+    '「重點實驗室」子頁補上與「重點研究」頁一致的具名實驗室資料，或考慮合併兩頁避免內容落差',
+    '系主任的話補上具名署名（廖本義）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://auto.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播6張（活動邀請卡、4則新聞）與長卡片輪播（偵測到1張，建議人工複核完整張數）皆為有效連結。SEO description留空。'},
+    {name:'招生／apply', url:'https://auto.fcu.edu.tw/apply/',
+     notes:'✅ 項目四B：本國生5管道（考試分發/繁星/申請/寒暑假轉學考）＋境外生6管道（僑港澳/海外聯招/外國學生/陸生招聯/甄試/考試），共11管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統。'},
+    {name:'產研－重點研究／research/重點研究', url:'https://auto.fcu.edu.tw/research/重點研究/',
+     notes:'✅ 具名12間實驗室與負責教授（先進控制與系統整合實驗室-林昱成、醫學影像實驗室-劉益瑞等），分光機電、生物醫學兩大類，運用自動化技術於工業製造/機器人/自駕車/智慧物聯網/生醫技術，惟各實驗室詳細研究內容需點入個別連結。'},
+    {name:'產研－重點實驗室／research/重點實驗室', url:'https://auto.fcu.edu.tw/research/重點實驗室/',
+     notes:'⚠️ 與「重點研究」頁為不同子頁，但本頁內容空白，僅聯絡資訊（資電館四樓401-1），無任何具名實驗室或研究描述，與重點研究頁形成明顯內容落差。'},
+    {name:'師資／faculty', url:'https://auto.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（講座教授/特約講座/特聘教授/專任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－單位新聞／news', url:'https://auto.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，最新至2026.07.14，且為本系專屬（連兩年全國AI智動化設備創作獎冠軍、EUR-ACE®認證、50+年系慶逾300位系友回娘家），即時性與相關性俱佳。'},
+    {name:'新聞與活動－學生愛分享／share', url:'https://auto.fcu.edu.tw/share/',
+     notes:'🚩 已查證顯示經濟系、材料系、資工系、行銷系、機電系等他系學生心得，與同院ee、fcuece呈現相同錯置名單，確認為第8個資料錯置案例，進一步佐證問題源於共用資料池。'},
+    {name:'關於－歡迎／關於/greeting', url:'https://auto.fcu.edu.tw/關於/greeting/',
+     notes:'⚠️ 未具名署名，「逾四十年」創系史、「2008年起」通過IEET認證、「5+2創新產業政策」數字具體，但缺主任姓名與照片。'},
+    {name:'成員／關於/staff', url:'https://auto.fcu.edu.tw/關於/staff/',
+     notes:'系主任廖本義姓名、分機（3915）、信箱（byliau@fcu.edu.tw）完整，但無照片。'},
+  ]
+},
+{
+  id:'ce', college:'資訊電機學院', name:'通訊工程學系',
+  url:'https://ce.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:59, d1:7, d2:10, d3:13, d4:6, d5:5, d6:13, d7:5,
+  highlights:[
+    '✅（與同院ee、fcuece、auto形成對照）學生愛分享頁2位撰文者（張潤淋、黃郁珺）皆確認為本系學生，證實資料錯置問題並非資訊電機學院全體通病，而是各系獨立配置',
+    '綜覽頁具體：民國91年（西元2002年）成立、17位專任教師（教授7/副教授7/助理教授3）、13間相關實驗室',
+    '招生頁9個管道（學士5＋四技二專1＋轉學2＋碩士1）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '系主任蔡淵裕具名於成員頁，聯絡資訊完整',
+  ],
+  pain_points:[
+    '⚠️ 歡迎頁未具名署名，僅「歡迎加入通訊工程的溫暖大家庭！啟程科技新未來」等勉勵性文字，無具體數字佐證——經查主任為蔡淵裕（成員頁有完整資料），建議串接補齊',
+    '產研頁內容抽象：「多位老師獲頒學術研究獎勵」「多項國內外發明專利」「各教授之研究實驗室」「許多計畫案與業界機構合作」，皆未具名教師、專利名稱、實驗室或合作企業',
+    '校園新聞近半年9則皆為校級通用新聞，無本系專屬新聞露出',
+    '綜覽頁缺學生人數、就業率、升學率等關鍵指標',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '歡迎頁補上系主任蔡淵裕具名署名',
+    '產研頁補上具名教師研究成果、實驗室名稱與合作企業案例',
+    '首頁補上 SEO description',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://ce.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播5張（YouTube影片、電子報連結、2則新聞）與長卡片輪播（偵測到1張，建議人工複核完整張數）皆為有效連結。SEO description留空。'},
+    {name:'招生／admissions', url:'https://ce.fcu.edu.tw/admissions/',
+     notes:'✅ 項目四B：學士班5管道＋四技二專1管道＋轉學2管道＋碩士1管道，共9管道全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統。'},
+    {name:'產研／research', url:'https://ce.fcu.edu.tw/research/',
+     notes:'⚠️ 「多位老師獲頒學術研究獎勵、研發成果傑出獎」「多項國內外發明專利」「各教授之研究實驗室」「許多計畫案與業界機構合作」，皆為概括性敘述，未具名教師、專利、實驗室或合作企業。'},
+    {name:'師資／teachers', url:'https://ce.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特約講座/專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://ce.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，但皆為校級通用新聞（招生績效、國際認證、畢典等），無本系專屬新聞。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://ce.fcu.edu.tw/share-list/',
+     notes:'✅ 2位撰文者（張潤淋、黃郁珺）皆標註「逢甲通訊系」，確認為本系學生，與同院多系的資料錯置問題形成對照，證實此問題並非全院統一發生。'},
+    {name:'關於－歡迎／greeting', url:'https://ce.fcu.edu.tw/greeting/',
+     notes:'⚠️ 未具名署名，「歡迎加入通訊工程的溫暖大家庭！啟程科技新未來」為勉勵性文字，無具體數字佐證，無照片。'},
+    {name:'關於－綜覽／about', url:'https://ce.fcu.edu.tw/about/',
+     notes:'✅ 民國91年（2002年）成立，17位專任教師（教授7/副教授7/助理教授3），13間相關實驗室，但缺學生人數、就業率、升學率。'},
+    {name:'成員／staff', url:'https://ce.fcu.edu.tw/staff/',
+     notes:'系主任蔡淵裕姓名、分機（4800/4845）、信箱（yuanytsai@o365.fcu.edu.tw）完整，但無照片。'},
+  ]
+},
+{
+  id:'upiee', college:'資訊電機學院', name:'資訊電機學院學士班',
+  url:'https://upiee.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:56, d1:8, d2:10, d3:10, d4:6, d5:5, d6:12, d7:5,
+  highlights:[
+    '學系分流頁機制具體清楚：大一暫不分系，學年結束前依興趣專長自由選擇電機工程/通訊工程/電子工程/資訊工程/自動控制工程五系，「延後分流」設計明確',
+    '招生頁4個管道（繁星/申請/分發/四技二專技優甄審）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '系主任陳鏡崑具名於成員頁，聯絡資訊完整',
+  ],
+  pain_points:[
+    '⚠️「學生愛分享」頁部分為分流後資工系學生（林雨杭、楊孟憲、林楷祐，與院內其他系錯置名單重疊），但同時混有經濟學系、材料科學與工程學系、行銷學系、機械與電腦輔助工程學系等完全不相關學院的學生——與商學院upfc「僅列同院分流系所學生」的合理情況不同，本案仍屬確認的資料錯置（第9個案例），因混入了非資訊電機學院體系的學生',
+    '歡迎頁未具名主任姓名或照片，僅以信箱（sfchen@o365.fcu.edu.tw）隱性標示身分，缺具體數字佐證',
+    '校園新聞近半年10則皆為校級通用新聞，無本班專屬活動報導',
+    '首頁長卡片輪播中2個項目為錨點連結（#a、#b，屬頁內分頁切換而非獨立頁面），非失效連結但與其他實際頁面連結混雜呈現，建議UI區隔',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '⚠️ 回報網管「學生愛分享」頁資料來源設定錯誤（第9個確認案例，但情況比其他案例複雜——部分為合理的分流系所學生，部分為完全不相關學生，需分別檢視資料綁定邏輯）',
+    '歡迎頁補上系主任陳鏡崑具名署名',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://upiee.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播4張（學系分流、分流講座、企業參訪、新鮮人專題）皆為有效連結。長卡片輪播6張中2個為頁內錨點（#a、#b，非獨立頁面但可正常運作），其餘4個為實際頁面連結，皆有效。SEO description留空。'},
+    {name:'招生／admissions', url:'https://upiee.fcu.edu.tw/admissions/',
+     notes:'✅ 項目四B：4個管道（繁星/申請/分發/四技二專技優甄審）全數指向 www.fcu.edu.tw/recurit_list/ 白名單系統，管道數量因「先進來後分流」性質偏少屬合理配置。'},
+    {name:'學習－學系分流／學系分流', url:'https://upiee.fcu.edu.tw/學系分流/',
+     notes:'✅ 明確列出電機工程/通訊工程/電子工程/資訊工程/自動控制工程五系分流選項，「大一暫不分系於學年結束前，依興趣、專長自由選擇」機制與時間點清楚。'},
+    {name:'師資／師資', url:'https://upiee.fcu.edu.tw/師資/',
+     notes:'依職稱分類完整（專任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://upiee.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年約10則，最新至2026.06.12，共22頁新聞列表，但皆為校級通用新聞（招生績效、EUR-ACE認證、畢典等），無本班專屬報導。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://upiee.fcu.edu.tw/share-list/',
+     notes:'⚠️ 已查證林雨杭/楊孟憲/林楷祐為分流後資工系學生（與院內ee/fcuece/auto錯置名單重疊部分），但同時列有經濟系、材料系、行銷系、機電系等完全不相關學院學生，確認為第9個資料錯置案例，情況較複雜（部分合理部分錯置）。'},
+    {name:'關於－歡迎／歡迎', url:'https://upiee.fcu.edu.tw/歡迎/',
+     notes:'⚠️ 未具名署名，僅信箱（sfchen@o365.fcu.edu.tw）隱性標示身分，無具體數字佐證，無照片。'},
+    {name:'成員／成員', url:'https://upiee.fcu.edu.tw/成員/',
+     notes:'系主任陳鏡崑姓名、信箱（chingkchen@fcu.edu.tw）、分機（#3923）、辦公室（資電415）完整，但無照片。'},
+  ]
+},
+{
+  id:'iecs', college:'資訊電機學院', name:'資訊工程學系',
+  url:'https://www.iecs.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查，平台為Porto非FCU標準WordPress主題）', evaluated:true,
+  overall:76, d1:16, d2:13, d3:11, d4:6, d5:8, d6:17, d7:5,
+  highlights:[
+    '本系介紹頁人口統計數字為本次全案例最完整：民國58年（1969）創系（原電子計算機科學系）、71年（1982）更名資訊工程學系、大學部學生約800餘人、累計畢業校友9,900人、37位專任教師',
+    '系主任陳錫民具名並附照片（是本次少見的具名＋有照片雙重完整案例），研究專長（軟體工程、DevOps、服務導向計算、分散式運算）具體，並保留歷任主管紀錄',
+    '✅ 訊息與公告頁近半年（2026-01-15後）逾40則本系專屬公告，涵蓋課務、競賽獲獎、國際交流、企業徵才等多類別，是本次全案例即時性與內容量體最佳個案',
+    '✅ 已確認首頁Hero輪播每張投影片皆有可點擊連結（連往對應新聞頁面）',
+    '學士班招生頁5個管道中至少4個明確指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+  ],
+  pain_points:[
+    '學生專欄頁未系統性標示每篇文章的撰文者系所歸屬，僅部分文章（如「逢甲資工 鈴雅」）有標註，需逐篇點入才能確認系所來源',
+    '本系介紹頁未具名現任系主任姓名或照片（該資訊僅見於系主任子頁），IEET認證的確切通過年份未提及',
+    '首頁 SEO description 完全缺失（連空的meta標籤都沒有），比多數系所「已寫入但留空」的情況更基礎',
+  ],
+  quick_fixes:[
+    '學生專欄頁統一標示每篇文章的撰文者系所歸屬',
+    '本系介紹頁串接系主任子頁的具名資訊，並補上IEET認證通過年份',
+    '首頁補上 SEO description meta標籤',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://www.iecs.fcu.edu.tw/',
+     notes:'✅ 項目四A：已確認Hero輪播每張投影片皆有可點擊連結（連往對應新聞頁），例如首張連至「張真誠教授榮膺首屆國際人工智慧科學院」新聞。SEO description meta標籤完全缺失（非留空而是不存在）。'},
+    {name:'招生－學士班／enrollment/college', url:'https://www.iecs.fcu.edu.tw/enrollment/college',
+     notes:'✅ 5個管道中繁星推薦/申請入學/分發入學明確指向 www.fcu.edu.tw/recurit_list/ 白名單子路徑，另提及四技二專甄選入學等管道。'},
+    {name:'關於本系－本系介紹／about', url:'https://www.iecs.fcu.edu.tw/about/',
+     notes:'✅ 民國58年（1969）創系（原電子計算機科學系）、71年（1982）更名、大學部約800餘人、畢業校友9,900人、37位專任教師，數字具體度為本次全案例最佳；⚠️ 未在本頁具名現任系主任。'},
+    {name:'系所成員－系主任／teacher', url:'https://www.iecs.fcu.edu.tw/teacher/',
+     notes:'✅ 系主任陳錫民（教授兼系主任）具名並附照片，分機（#3700/3741）、信箱（hsiminc@fcu.edu.tw）、研究專長（軟體工程/DevOps/服務導向計算/分散式運算）完整，並保留歷任主管紀錄。'},
+    {name:'訊息與公告／news', url:'https://www.iecs.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年逾40則本系專屬公告，最新至2026.06.30（115-1資訊系大學部選課），涵蓋課務/競賽/國際交流/企業徵才，即時性與內容量體為本次全案例最佳。'},
+    {name:'訊息與公告－學生專欄／news?category=student', url:'https://www.iecs.fcu.edu.tw/news/?category=student',
+     notes:'⚠️ 部分文章有系所標註（如「逢甲資工 鈴雅」），但非全部文章系統性標示撰文者系所歸屬，需逐篇確認。'},
+  ]
+},
+{
+  id:'miee', college:'資訊電機學院', name:'資訊電機工程碩士在職學位學程',
+  url:'https://miee.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:46, d1:7, d2:6, d3:8, d4:6, d5:5, d6:11, d7:3,
+  highlights:[
+    '總覽頁沿革具體：92學年度（2003年）正式招生，資訊工程／電子工程／自動控制工程三系皆已成立三十年以上，106學年度起將在職專班改制為在職學位學程',
+    '招生頁確實有效連結至 www.fcu.edu.tw/recurit_list/master_job_115/ 白名單系統（首次WebFetch判讀誤判為「未見此類連結」，經原始碼grep二次查證後確認存在）',
+    '台積電半導體學程／智慧製造學程為與資訊電機學院、工程與科學學院共同規劃的具名產業合作方案',
+    '系主任王馭熊具名於成員頁，聯絡資訊完整（含雙信箱標註優先使用）',
+  ],
+  pain_points:[
+    '🚩 首頁Hero輪播原始碼確認：所有投影片的 `<a class="o-index-banner__slide">` 標籤完全沒有href屬性，點擊無反應——是本次第2個確認「輪播完全無連結」的個案（第1個為csi文化與社會創新碩士學位學程）',
+    '⚠️ 招生頁雖有白名單連結，但頁面本身未列出具體招生名額、報名時程（起訖日期）或招生簡章下載，僅有評分方式（書面70%＋面試30%）與聯絡方式，資訊不完整需另外查詢',
+    '台積電半導體學程頁僅提及方案名稱與合作單位，未展示課程清單、招生名額或申請資格，需點外部連結',
+    '總覽頁與成員頁皆未具名系主任於歡迎/總覽頁本身（僅成員頁有王馭熊資料），且無照片',
+    '校園新聞近半年9則皆為校級通用新聞，無本學程專屬報導',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '🚩 修復首頁Hero輪播投影片的href連結',
+    '招生頁補上具體招生名額、報名時程與簡章下載連結',
+    '台積電半導體學程頁補上課程清單與申請資格',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://miee.fcu.edu.tw/',
+     notes:'🚩 項目四A：原始碼檢視確認Hero輪播所有 `<a>` 標籤皆無href屬性，點擊無反應，本次第2個輪播完全無連結的個案。長卡片輪播3張（碩士專業、課程設計、學生心得分享）皆有效。SEO description留空。'},
+    {name:'招生／招生', url:'https://miee.fcu.edu.tw/招生/',
+     notes:'⚠️ 項目四B：頁面確有 www.fcu.edu.tw/recurit_list/master_job_115/ 白名單連結（WebFetch初次判讀誤判為不存在，經原始碼grep二次查證確認存在，依規則16已修正），但頁面缺具體名額、報名時程與簡章下載，僅列評分方式（書面70%＋面試30%）與聯絡方式。'},
+    {name:'總覽／about', url:'https://miee.fcu.edu.tw/about/',
+     notes:'✅ 92學年度（2003年）正式招生，資工/電子/自控三系皆成立30年以上，106學年度起改制為在職學位學程，但未具名現任負責人，缺學生人數。'},
+    {name:'產研（外連）', url:'https://rdms.fcu.edu.tw/',
+     notes:'產研項目連往資訊與電機產業碩士專班（rdms）網站，屬院內資源共用性質，非失效連結。'},
+    {name:'台積電半導體學程／台積電半導體學程', url:'https://miee.fcu.edu.tw/台積電半導體學程/',
+     notes:'⚠️ 具名與台積電合作的「半導體學程」「智能製造學程」方案，但未展示課程清單、招生名額或申請資格，屬導覽推廣頁而非內容頁。'},
+    {name:'師資／teachers', url:'https://miee.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（專任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://miee.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，但皆為校級通用新聞（申請入學人數冠軍、EUR-ACE認證、畢典等），無本學程專屬報導。'},
+    {name:'成員／成員', url:'https://miee.fcu.edu.tw/成員/',
+     notes:'系主任王馭熊姓名、分機（4946）、辦公室（電子通訊館119-2）、雙信箱（含優先使用標註）完整，但無照片。'},
+  ]
+},
+{
+  id:'rdms', college:'資訊電機學院', name:'資訊與電機產業碩士專班',
+  url:'https://rdms.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:50, d1:6, d2:10, d3:12, d4:6, d5:2, d6:8, d7:6,
+  highlights:[
+    '招生頁報名時程明確：115學年度秋季班2026/2/2-4/29，並提供「即刻報名」連結至 www.fcu.edu.tw/recurit_list/master_industr/ 白名單系統與PDF簡章下載',
+    '首頁SEO description已填寫（「畢業即就業，高階科技人才養成班」）',
+    '專班主任王馭熊具名於成員頁（與miee資訊電機工程碩士在職學位學程同一人兼任），聯絡資訊完整',
+  ],
+  pain_points:[
+    '優勢頁列出「企業最愛」「學用合一」「畢業即就業」「廣大校友群」四大標題，但皆無具名合作企業、就業率或薪資數據支撐，屬宣傳性標語而非實績佐證',
+    '🚩 全站無獨立新聞／公告或學生分享機制（導覽選單無「新聞與活動」分類），無法追蹤學程近期動態，是本次全案例結構性缺乏新聞機制的個案之一（與fphd金融博士學位學程同類型）',
+    '綜覽頁未具名負責人姓名或照片，亦缺成立年份、學生人數、就業率統計',
+    '招生頁未列出具體招生名額或評分方式',
+  ],
+  quick_fixes:[
+    '🚩 建議新增「最新消息」導覽分類，讓潛在申請者能追蹤學程動態',
+    '優勢頁補上具名合作企業清單與就業率／薪資數據',
+    '招生頁補上具體招生名額與評分方式',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://rdms.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播3張（師資、課程設計、招生資訊）皆為有效連結，長卡片輪播2個為頁內錨點（#a、#b）非獨立頁面但可運作。SEO description已填寫。'},
+    {name:'招生資訊／招生', url:'https://rdms.fcu.edu.tw/招生/',
+     notes:'✅ 115學年度秋季班報名時程明確（2026/2/2-4/29），「即刻報名」連結指向 www.fcu.edu.tw/recurit_list/master_industr/ 白名單系統，並有PDF簡章下載，但未列具體招生名額或評分方式。'},
+    {name:'優勢／why', url:'https://rdms.fcu.edu.tw/why/',
+     notes:'⚠️ 「企業最愛」「學用合一」「畢業即就業」「廣大校友群」四大標題皆無具名企業、就業率或薪資數字佐證，屬宣傳性質而非實績展示。'},
+    {name:'關於－綜覽／綜覽', url:'https://rdms.fcu.edu.tw/綜覽/',
+     notes:'⚠️ 「為填補國內現階段產業發展所需人力之缺口」定位說明，但未具名負責人，缺成立年份、學生人數、就業率統計。'},
+    {name:'師資／各系師資', url:'https://rdms.fcu.edu.tw/各系師資/',
+     notes:'待複核師資完整度。'},
+    {name:'成員／成員', url:'https://rdms.fcu.edu.tw/成員/',
+     notes:'專班主任王馭熊（國立清華大學博士）姓名、電話、辦公室、雙信箱完整，行政助理黃莉雅業務範圍描述詳細，但皆無照片。'},
+  ]
+},
+{
+  id:'bmie', college:'資訊電機學院', name:'生醫資訊暨生醫工程碩士學位學程',
+  url:'https://bmie.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:38, d1:5, d2:8, d3:5, d4:6, d5:5, d6:4, d7:5,
+  highlights:[
+    '招生頁明確公告停招狀態，未刻意隱瞞或誤導訪客',
+    'Hero與長卡片輪播連結皆有效，含3則具體學生分享文章連結',
+    '產學合作連結至校級 oiac.fcu.edu.tw 頁面雖為301重定向但可正常到達',
+  ],
+  pain_points:[
+    '🚩【重大發現】本學程「已於112學年度起（2023年）停招」，但網站本身仍以現行招生系所的完整格式呈現（首頁、師資、產研等頁面照常運作），僅在深入「招生」子頁才會看到停招公告，訪客從首頁或其他頁面完全無法得知本學程已停止招生——建議校級網管評估是否應在網站首頁顯著位置標示停招狀態，或考慮下架/歸檔本站，而非以現役系所格式繼續呈現',
+    '⚠️（因應停招現況）歡迎頁、成員頁、產研頁內容普遍空洞（無主任具名、無具名研究成果），這與其他停招狀態的合理反應一致，但也代表本站已無持續維護的實質意義',
+    '「學生愛分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生（與同院其他系錯置名單一致），是本次第10個確認案例，惟因學程已停招，此問題的優先修復順序可再議',
+    '校園新聞近半年9則皆為校級通用新聞，無本學程相關內容（合理，因已無在學新生）',
+  ],
+  quick_fixes:[
+    '🚩 建議校級單位評估：本學程既已停招，應在網站顯著位置（非僅招生子頁）標示停招狀態，避免誤導仍在瀏覽的訪客，或考慮將網站轉為單純的「在校生／校友資訊」頁面並移出常態招生系所健檢名單',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://bmie.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播2張（校級招生頁、企業實習）與長卡片輪播6張（企業實習/參訪、碩士專業、3則學生分享）皆為有效連結，但首頁完全未提及本學程已停招的重要狀態。SEO description留空。'},
+    {name:'招生／招生', url:'https://bmie.fcu.edu.tw/招生/',
+     notes:'🚩 明確公告「本學程於112學年度起停招」（適用考試入學與甄試入學），無招生名額、報名時程或白名單連結——是本次唯一確認「已停招但網站仍以現役格式運作」的個案。'},
+    {name:'產研／產研', url:'https://bmie.fcu.edu.tw/產研/',
+     notes:'⚠️ 僅聯絡資訊與外連「產學合作」頁（oiac.fcu.edu.tw，301重定向但可到達），無具名研究成果、實驗室或合作企業清單。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://bmie.fcu.edu.tw/share-list/',
+     notes:'⚠️ 顯示經濟系、材料系、資工系、行銷系、機電系等他系學生分享，是本次第10個確認的資料錯置案例，惟考量學程已停招、無新進學生可投稿，此問題實質影響有限。'},
+    {name:'關於－歡迎／歡迎', url:'https://bmie.fcu.edu.tw/歡迎/',
+     notes:'⚠️ 未具名署名，僅「21世紀最有價值的主修，歡迎你的加入！」宣傳標語（與停招現況矛盾），無照片、無具體數字。'},
+    {name:'成員／成員', url:'https://bmie.fcu.edu.tw/成員/',
+     notes:'⚠️ 未具名任何負責人姓名，僅學程通用聯絡方式（分機3892、siterng@fcu.edu.tw），無個人聯絡資訊或照片。'},
+  ]
+},
+{
+  id:'gece', college:'資訊電機學院', name:'電機與通訊工程博士學位學程',
+  url:'https://gece.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:47, d1:4, d2:9, d3:10, d4:6, d5:5, d6:8, d7:5,
+  highlights:[
+    '招生頁四組別定位清楚（電機工程組/電子工程組/自動控制工程組/通訊工程組），呼應學程整合大電機各學門的定位',
+    '博士班考試入學／甄試入學2個管道連結指向 www.fcu.edu.tw/recurit_list/dr_exam/ 等白名單子路徑',
+    '四大核心價值具體列出（專業知識/自我展現/專業倫理/國際視野）',
+  ],
+  pain_points:[
+    '🚩 歡迎頁完全沒有主任的話內容，僅學程標語「加入電通博士學程行列，建構你的人生志業!」與聯絡資訊，是本次全案例中歡迎頁內容最貧乏的個案之一',
+    '成員頁未具名任何負責人姓名，聯絡資訊（資電533辦公室、siterng@fcu.edu.tw、分機3892）與生醫資訊暨生醫工程碩士學位學程（bmie）完全相同，顯示可能由同一行政辦公室代管，惟訪客無從得知本學程實際負責人是誰',
+    '逕修讀博士學位學程與外國學生申請管道僅標示「最新招生資訊」而無具體報名日期，資訊不完整',
+    '關於頁缺成立年份、學生人數、就業率等具體數字',
+    '校園新聞近半年9則皆為校級通用新聞，無本學程專屬報導',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '歡迎頁補上主任或學程負責人具名歡迎文字',
+    '成員頁補上學程實際負責人姓名（釐清與bmie共用辦公室是否代表同一負責人）',
+    '逕修讀博士班與外國學生管道補上具體報名日期',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://gece.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播2張（碩士專業、2014年舊新聞）皆為有效連結，本頁無長卡片輪播元件（非缺陷，頁面設計本身較簡潔）。SEO description留空。'},
+    {name:'招生／apply', url:'https://gece.fcu.edu.tw/apply/',
+     notes:'✅ 博士班考試入學（2026.03.27-04.27）／甄試入學（2025.10.09-10.29）2個管道指向白名單子路徑（dr_exam等），惟逕修讀博士學位學程與外國學生秋/春季班3個管道僅標示「最新招生資訊」無具體日期。四組別（電機/電子/自控/通訊工程組）定位清楚。'},
+    {name:'師資／teachers', url:'https://gece.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（講座教授/特聘教授/專任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://gece.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，共22頁新聞列表，但皆為校級通用新聞，無本學程專屬報導。'},
+    {name:'關於－歡迎／greeting', url:'https://gece.fcu.edu.tw/greeting/',
+     notes:'🚩 完全無主任的話內容，僅「加入電通博士學程行列，建構你的人生志業!」標語與聯絡資訊，是本次歡迎頁內容最貧乏個案之一。'},
+    {name:'關於－綜覽／about', url:'https://gece.fcu.edu.tw/about/',
+     notes:'⚠️ 「促進大電機各學門間之科技整合」定位與四大核心價值（專業知識/自我展現/專業倫理/國際視野）具體，但缺成立年份、學生人數、就業率等統計數字。'},
+    {name:'成員／staff', url:'https://gece.fcu.edu.tw/staff/',
+     notes:'⚠️ 未具名任何負責人姓名，僅部門聯絡方式（資電533辦公室、siterng@fcu.edu.tw、分機3892）——與bmie生醫資訊暨生醫工程碩士學位學程完全相同，顯示可能同一行政辦公室代管，惟訪客無從得知實際負責人身分。'},
+    {name:'生活－獎助學金／獎助學金', url:'https://gece.fcu.edu.tw/獎助學金/',
+     notes:'待複核獎助學金具體項目與金額。'},
+  ]
+},
+{
+  id:'pbiecs', college:'資訊電機學院', name:'資訊工程學系學士後專班',
+  url:'https://pbiecs.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:57, d1:7, d2:11, d3:12, d4:6, d5:5, d6:10, d7:6,
+  highlights:[
+    '學生愛分享頁3篇文章敘事具體且定位鮮明：服裝設計轉資訊工程、日文系轉科技、會計背景進入AI領域，呼應學士後專班「跨領域轉職」的核心賣點',
+    '招生頁報名時程明確（115/03/30-07/02），提供SharePoint招生簡章PDF下載，並有「重要日程」連結指向 www.fcu.edu.tw/recurit_list/post-baccprogadmission3/ 白名單——與先前econ/nze發現的post-baccprogadmission1同屬一組編號白名單子路徑，證實此系列slug為合法但校方文件記錄不全，而非錯誤連結',
+    '首頁SEO description已填寫（「資訊工程學系學士後專班｜逢甲大學」）',
+  ],
+  pain_points:[
+    '⚠️「學生愛分享」頁3篇文章完全未標註撰文者姓名或系所歸屬，與其他系所常見的「錯置為他系學生」不同，本案是連基本身分標示都缺席，無法判斷內容真偽或來源',
+    '關於／綜覽頁未具名負責人姓名或照片，亦缺成立年份、學生人數、就業率',
+    '學習頁僅泛稱「培養學生解決問題、跨領域整合應用能力」，無具體課程名稱，需點入課程規劃頁查看',
+    '招生頁未列出具體招生名額或評分方式',
+    '校園新聞近半年9則皆為校級通用新聞，無本班專屬報導',
+  ],
+  quick_fixes:[
+    '學生愛分享頁補上撰文者姓名與身分標註，增加內容可信度',
+    '關於頁補上負責人具名資訊與具體數字',
+    '學習頁補上具體課程名稱清單',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://pbiecs.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播2張（招生頁、學院新聞）與長卡片輪播5張（學生分享、招生、課程規劃、學習、關於）皆為有效連結。SEO description已填寫完整。'},
+    {name:'資訊工程學士後專班－招生／apply', url:'https://pbiecs.fcu.edu.tw/apply/',
+     notes:'✅ 網路報名時程明確（115/03/30上午9時-07/02晚上12時），提供招生簡章PDF（SharePoint連結）下載，「重要日程」連結指向 www.fcu.edu.tw/recurit_list/post-baccprogadmission3/ 白名單子路徑，與econ/nze發現的post-baccprogadmission1屬同系列slug，證實為合法白名單而非錯誤連結；惟未列具體招生名額或評分方式。'},
+    {name:'學習／post-baccalaureate', url:'https://pbiecs.fcu.edu.tw/post-baccalaureate/',
+     notes:'⚠️ 僅泛稱「研究與學習使用各類資訊相關理論及知識，培養跨領域整合應用能力」，無具體課程名稱，「課程規劃」連結至curriculum/頁但本頁未展開。'},
+    {name:'師資／首頁/faculty', url:'https://pbiecs.fcu.edu.tw/首頁/faculty/',
+     notes:'待複核師資完整度。'},
+    {name:'校園新聞／news-list', url:'https://pbiecs.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，但皆為校級通用新聞，無本班專屬報導。'},
+    {name:'學生愛分享／result', url:'https://pbiecs.fcu.edu.tw/result/',
+     notes:'⚠️ 3篇文章（服裝設計轉資訊工程、日文系轉科技、會計背景轉AI）敘事具體且定位鮮明，呼應學士後跨域轉職賣點，但完全未標註撰文者姓名或系所歸屬，無法確認內容真偽或來源，與其他系「錯置為他系學生」的問題性質不同。'},
+    {name:'關於－綜覽／首頁/about', url:'https://pbiecs.fcu.edu.tw/首頁/about/',
+     notes:'⚠️ 「培養學生的軟體開發能力」「畢業即就業」等承諾性描述，未具名負責人，缺成立年份、學生人數、就業率統計。'},
+  ]
+},
+{
+  id:'ics', college:'資訊電機學院', name:'資通安全碩士學位學程',
+  url:'https://ics.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:68, d1:10, d2:14, d3:13, d4:6, d5:6, d6:14, d7:5,
+  highlights:[
+    '雙聯學位具名兩所國際大學：義大利杜林理工大學（Politecnico di Torino）與美國辛辛那提大學，各有獨立子頁介紹',
+    '✅ 校園新聞近半年3則皆為本學程專屬且具體：如梭世代資安技術菁英獎學金得獎名單、CACS Lab全國資訊安全會議最佳學生論文獎佳作、DLT2026最佳論文獎',
+    '招生總覽頁名額具體（考試入學8名、甄試入學12名），評分方式明確（皆為書面資料審查50%＋面試50%）',
+    '系主任周兆龍具名於成員頁，「如梭世代資安技術菁英獎學金」具名獎學金項目',
+  ],
+  pain_points:[
+    '⚠️ 招生總覽頁本身未見白名單連結（WebFetch初次判讀），但經二次查證確認「考試入學」「甄試入學」兩個子頁分別有 www.fcu.edu.tw/recurit_list/mastr_exam/ 與 mastr_interview/ 白名單連結——資訊分散在子頁而非總覽頁本身，建議總覽頁直接整合白名單連結，減少訪客查找步驟',
+    '「如梭世代資安技術菁英獎學金」頁僅有標題與申請流程框架，未在頁面本身列出具體金額與名額，需下載PDF簡章才能得知',
+    '關於本學程頁未具名負責人姓名或照片，缺成立年份、學生人數、就業率統計',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '招生總覽頁直接整合考試/甄試入學的白名單連結，避免訪客需點兩層才能找到',
+    '獎學金頁面本身補上具體金額與名額（不僅限PDF簡章）',
+    '關於本學程頁補上負責人具名資訊與具體數字',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://ics.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播5張（獎學金、4則2024新聞）與長卡片輪播7張（師資、多則2026新聞、獎學金、杜林理工大學合作、CACS Lab研究團隊）皆為有效連結，內容豐富。SEO description留空。'},
+    {name:'招生總覽／apply', url:'https://ics.fcu.edu.tw/apply/',
+     notes:'⚠️ 考試入學8名額／甄試入學12名額，評分方式明確（皆書面50%＋面試50%），但本頁未見白名單連結。'},
+    {name:'招生－考試入學／examination', url:'https://ics.fcu.edu.tw/examination/',
+     notes:'✅ 已查證含 www.fcu.edu.tw/recurit_list/mastr_exam/ 白名單連結（總覽頁未顯示，需點入此子頁才能找到）。'},
+    {name:'招生－甄試入學／application-based', url:'https://ics.fcu.edu.tw/application-based/',
+     notes:'✅ 已查證含 www.fcu.edu.tw/recurit_list/mastr_interview/ 白名單連結。'},
+    {name:'獎助學金－如梭世代資安技術菁英獎學金／scholarship', url:'https://ics.fcu.edu.tw/scholarship/',
+     notes:'⚠️ 具名獎學金項目「鼓勵在學學生深耕資訊安全領域」，但頁面本身未列具體金額與名額，僅提供PDF簡章下載連結。'},
+    {name:'國際交流－義大利杜林理工大學／polito', url:'https://ics.fcu.edu.tw/polito/',
+     notes:'✅ 雙聯學位合作校具名（Politecnico di Torino），有獨立子頁介紹。'},
+    {name:'師資／teachers', url:'https://ics.fcu.edu.tw/teachers/',
+     notes:'依職稱分類（專任教授/副教授/助理教授）。'},
+    {name:'新聞／news', url:'https://ics.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年3則，最新至2026.07.10，皆為本學程專屬（如梭世代獎學金得獎名單、CACS Lab全國資安會議最佳學生論文獎佳作、DLT2026最佳論文獎），內容具體但數量偏少。'},
+    {name:'關於本學程／overview', url:'https://ics.fcu.edu.tw/overview/',
+     notes:'⚠️ 「課程整合理論與實務，提升學術聲譽與研究機會」定位敘述，但未具名負責人，缺成立年份、學生人數、就業率統計。'},
+    {name:'成員／members', url:'https://ics.fcu.edu.tw/members/',
+     notes:'系主任周兆龍姓名、分機（3772）、信箱（clchou@o365.fcu.edu.tw）、研究專長完整，副聯絡人游舒亭資訊亦完整，但皆無照片。'},
+  ]
+},
+
+/* ── 建設學院 ── */
+{
+  id:'civil', college:'建設學院', name:'土木工程學系',
+  url:'https://civil.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:59, d1:11, d2:9, d3:13, d4:6, d5:5, d6:10, d7:5,
+  highlights:[
+    '導覽選單資訊架構豐富：獨立IEET工程教育認證專區、BIM學程、亮點研究、產學聯盟、系友會、工地主任班／公共工程品質管理訓練班等推廣教育課程',
+    '系主任的話具名（現任林喻峰＋前任林威延兩篇畢典致辭），個人化敘事具體（如「15年前我剛來台中工作」「修了160多個學分」）',
+    '招生管道多元且明確：學士班（繁星/申請/特殊選才/考試分發/身障甄試/轉學考）＋境外生皆指向 www.fcu.edu.tw/recurit_list/ 或 national_list/ 白名單系統，報名日期具體（如繁星115.3.11-3.12）',
+    '本系無「學生愛分享」功能，不受該系統性問題影響',
+  ],
+  pain_points:[
+    '亮點研究頁僅有標題「科技領航｜智慧營建」與技術領域列舉（建築醫學/機械手臂/3D列印/BIM/VR-XR/Chatbots），無具名教師或具體研究成果，媒體報導區段空白',
+    '產學聯盟頁提及「近20家產學合作企業」但未列出任何企業名稱，「企業實習合作公司」「契約合作機構」表格皆無內容填充',
+    '系所沿革頁標題暗示應有歷史時間軸，但實際內容僅為聯絡資訊與導覽連結，未提供成立年份、學生人數、就業率',
+    '首頁Hero輪播僅2張、長卡片輪播僅2張，數量為本次全案例偏少個案之一',
+    '校園新聞首頁顯示皆為「逢甲精選」校級通用新聞，需另點「單位新聞」標籤才能查看本系專屬內容（本次未及查證單位新聞頁實際更新頻率）',
+    '系主任於行政團隊頁與系主任的話頁皆無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '亮點研究頁補上具名教師與具體研究成果',
+    '產學聯盟頁補上近20家合作企業的具名清單',
+    '系所沿革頁補上實際成立年份、學生人數等歷史數字（目前標題與內容不符）',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://civil.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播2張（綜覽、傑出校友）與長卡片輪播2張（亮點研究、外連Google Sites）皆為有效連結，但張數偏少。本站無學生愛分享功能。SEO description留空。'},
+    {name:'招生－學士班／bachelor-admission', url:'https://civil.fcu.edu.tw/bachelor-admission/',
+     notes:'✅ 項目四B：繁星/個人申請/特殊選才/考試分發/身障生甄試/寒暑假轉學考＋境外生（外籍生/僑生/港澳生）皆指向 recurit_list/ 或 national_list/ 白名單系統，報名日期具體（如繁星115.3.11-3.12、申請第二階段115.4.8-5.6）。'},
+    {name:'研究與產學－亮點研究／key-research', url:'https://civil.fcu.edu.tw/key-research/',
+     notes:'⚠️ 僅「科技領航｜智慧營建」標題與技術領域列舉（建築醫學/機械手臂/3D列印/BIM/空間資訊/VR-XR/Chatbots），無具名教師或具體研究成果，媒體報導區段空白。'},
+    {name:'研究與產學－產學聯盟／industry-university-alliance', url:'https://civil.fcu.edu.tw/industry-university-alliance/',
+     notes:'⚠️ 標題提及「近20家產學合作企業」但未列企業名稱，「企業實習合作公司」「契約合作機構」表格架構存在但無內容填充。'},
+    {name:'師資／teachers', url:'https://civil.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://civil.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：首頁顯示9則皆為「逢甲精選」校級通用新聞（最新至2026.06.12），需另點「單位新聞」標籤查看本系專屬內容，本次未及查證該分頁實際更新頻率。'},
+    {name:'綜覽－系主任的話／welcome', url:'https://civil.fcu.edu.tw/welcome/',
+     notes:'系主任林喻峰（現任）與林威延（前任）具名致辭，個人化敘事具體，但缺系所本身的成立年份或IEET認證通過年份等機構性數字，無照片。'},
+    {name:'綜覽－系所沿革／overview', url:'https://civil.fcu.edu.tw/overview/',
+     notes:'⚠️ 標題為「系所沿革」但實際內容僅聯絡資訊與導覽連結，未提供成立年份、學生人數、就業率等歷史數字，標題與內容不符。'},
+    {name:'綜覽－行政團隊／member', url:'https://civil.fcu.edu.tw/member/',
+     notes:'系主任林喻峰姓名、信箱（yufeng@o365.fcu.edu.tw）、辦公室（土317）、研究室（土405-2）、分機（3100/3111）完整，但無照片。'},
+  ]
+},
+{
+  id:'he', college:'建設學院', name:'水利工程與資源保育學系',
+  url:'https://he.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:71, d1:13, d2:15, d3:13, d4:6, d5:8, d6:11, d7:5,
+  highlights:[
+    '系主任張嘉玲具名並附照片於歡迎頁，是本次建設學院少見的具名＋有照片雙重完整案例',
+    '✅ 首頁Hero輪播10張全數有效，內容具體且多為本系專屬活動（烏溪水庫參訪、防災訓練、職涯分享、SDGs金獎、國際交流、石岡壩參訪）',
+    '✅ 獨立「單位新聞列表」頁為真正本系專屬新聞（5件大專生研究計畫通過國科會、朝陽溪環境倡議、AEC產業數位建模競賽），近半年至最新2026.07.06',
+    '✅ 學生愛分享頁4位撰文者皆確認為本系學生，分類清楚（社團成長/國際移動/創新創業）',
+    '招生管道多元（特殊選才/繁星/申請/考試分發/碩士/博士），6個確認指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+  ],
+  pain_points:[
+    '產研頁僅籠統提及「結合營建及防災研究中心及海峽兩岸中心之產研資源」，「研究中心」標題下無實際內容，無具名研究成果或合作企業',
+    '未來出路頁僅泛稱「可參與國家考試或擔任工程人員」，無具體就業案例、就業率百分比或企業合作清單',
+    '歡迎頁雖具名有照片，但致詞內容缺乏具體數字佐證（成立年份、學生人數等）',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '產研頁補上具名研究成果或合作企業案例',
+    '未來出路頁補上具體就業率或系友案例',
+    '首頁補上 SEO description',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://he.fcu.edu.tw/',
+     notes:'✅ 項目四A：Hero輪播10張（烏溪水庫參訪、潭子區防災訓練、水利系職涯分享、SDGs金獎、國際交流、石岡壩參訪等）皆為有效連結，其中1張帶preview參數但已確認301重定向至正式頁面。長卡片輪播5張皆有效。SEO description留空。'},
+    {name:'招生／apply', url:'https://he.fcu.edu.tw/apply/',
+     notes:'✅ 項目四B：特殊選才/繁星推薦/申請入學/考試分發/碩士班考試/博士班考試共6個管道，已查證皆指向 www.fcu.edu.tw/recurit_list/ 白名單子路徑（college_special/star/apply/exam、mastr_exam、dr_exam）。'},
+    {name:'研究與產學－產研／產研', url:'https://he.fcu.edu.tw/產研/',
+     notes:'⚠️ 僅籠統提及結合營建及防災研究中心、海峽兩岸中心之產研資源，「研究中心」標題下無實際內容，無具名研究成果或合作企業。'},
+    {name:'未來出路／future', url:'https://he.fcu.edu.tw/future/',
+     notes:'⚠️ 僅泛稱畢業生可參與國家考試或擔任水利/水土保持/農田水利工程人員，「多數畢業生5年內考取證照」但無具體就業率百分比或企業合作清單。'},
+    {name:'師資／teachers', url:'https://he.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特聘教授/專任教授/副教授/助理教授/研究副教授、兼任教授/副教授/助理教授/講師）。'},
+    {name:'新聞與活動－單位新聞列表／news', url:'https://he.fcu.edu.tw/news/',
+     notes:'✅ 項目六：真正本系專屬新聞，近半年多則（5件大專生研究計畫通過國科會、朝陽溪環境倡議、AEC產業數位建模競賽學生獲獎、教師升等），最新至2026.07.06，即時性與相關性俱佳。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://he.fcu.edu.tw/share-list/',
+     notes:'✅ 4位撰文者（方鈺誠、洪嘉臨、于沛雅、蕭世婷）皆標註本系，分類清楚（社團成長/國際移動/創新創業），確認為本系學生。'},
+    {name:'關於－歡迎／歡迎', url:'https://he.fcu.edu.tw/歡迎/',
+     notes:'✅ 系主任張嘉玲具名並附照片（本次建設學院少見雙重完整案例），但致詞內容為課程領域概述，缺具體數字佐證。'},
+    {name:'成員／成員', url:'https://he.fcu.edu.tw/成員/',
+     notes:'系主任張嘉玲信箱（clchang@o365.fcu.edu.tw）、分機（3244）完整，成員頁本身無照片（惟歡迎頁已有）。'},
+  ]
+},
+{
+  id:'up', college:'建設學院', name:'都市計畫與空間資訊學系',
+  url:'https://up.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:64, d1:9, d2:13, d3:12, d4:6, d5:7, d6:12, d7:5,
+  highlights:[
+    '定位獨特：「全臺灣唯一結合都市計畫與空間資訊專業之系所」，「逢甲都資50載，邁向永續新未來」50周年具體里程碑',
+    '✅ 校園新聞為本系專屬且具體：大村鄉規劃成果發表、全國規劃聯展獲獎、與西屯國小合作社區計畫、氣候變遷風險評估論文獲獎，近半年至少6則',
+    'Hero輪播8張皆為有效連結，其中4張為本系自有新聞（非校級通用），內容豐富度佳',
+    '系主任徐逸祥具名於成員頁，招生管道多元（本國生6＋境外生5）皆指向白名單系統',
+  ],
+  pain_points:[
+    '⚠️ 系主任的話（歡迎頁）未具名署名，僅以匿名文章形式呈現50周年里程碑論述，訪客無法得知撰文者身分——經查主任為徐逸祥（成員頁有完整資料），建議串接補齊',
+    '產研頁僅籠統提及「各研究中心強大研發能量」「積極延攬中部地區優質企業合作」，未具名研究成果、企業或合作案例，需另點「研究中心」「產學聯盟」頁查看',
+    '綜覽頁雖提及「50年」但缺精確西元成立年份、學生人數、就業率統計',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '歡迎頁補上系主任徐逸祥具名署名',
+    '產研頁補上具名研究成果或合作企業案例',
+    '綜覽頁補上精確西元成立年份與學生人數',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://up.fcu.edu.tw/',
+     notes:'✅ 項目四A：Hero輪播8張（4則本系新聞、2則校級新聞、招生入口）與長卡片輪播5張（課程地圖、國際移地教學、產學聯盟、學士/碩士專業）皆為有效連結，內容豐富。SEO description留空。'},
+    {name:'招生－學士班／apply', url:'https://up.fcu.edu.tw/apply/',
+     notes:'✅ 項目四B：本國生6管道（繁星/申請/分發/四技二專/寒暑假轉學）＋境外生5管道（僑港澳兩梯次/春季班/海聯會/外國學生）皆指向 recurit_list 白名單系統。'},
+    {name:'產研－產學與研究／research', url:'https://up.fcu.edu.tw/research/',
+     notes:'⚠️ 「各研究中心強大研發能量」「積極延攬中部地區優質企業合作並簽訂產學聯盟」，但本頁未具名研究成果、研究中心細節或合作企業，屬概括性導覽。'},
+    {name:'師資／faculty', url:'https://up.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（特聘教授/專任教授/副教授/助理教授/研究助理教授、兼任教授/助理教授/講師）。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://up.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，最新至2026.06.24，皆為本系專屬（大村鄉規劃成果發表、全國規劃聯展獲獎、西屯國小社區合作、氣候變遷風險評估論文獲獎）。'},
+    {name:'關於－歡迎／greeting', url:'https://up.fcu.edu.tw/greeting/',
+     notes:'⚠️ 未具名署名，「五十周年的里程碑」「逢甲都資50載，邁向永續新未來」具體年數但無撰文者身分，無照片。'},
+    {name:'關於－綜覽／about', url:'https://up.fcu.edu.tw/about/',
+     notes:'✅ 「全臺灣唯一結合都市計畫與空間資訊專業之系所」定位獨特，「五十年淬鍊的規劃專才」呼應50周年，但缺精確西元成立年份、學生人數、就業率統計。'},
+    {name:'成員／staff', url:'https://up.fcu.edu.tw/staff/',
+     notes:'系主任徐逸祥（副教授兼系主任）信箱（ysshiu@fcu.edu.tw）、分機（3350/3355）完整，但無照片。'},
+  ]
+},
+{
+  id:'tl', college:'建設學院', name:'運輸與物流學系',
+  url:'https://tl.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:75, d1:12, d2:14, d3:13, d4:6, d5:8, d6:17, d7:5,
+  highlights:[
+    '本次全案例次高分：「民國六十年起創系至迄今」（1971年）、「造育英才超過五千人」、「全國第一個通過國際IEET認證的運輸物流系所」稀缺性論述具體有力',
+    '特色亮點頁具名國際合作：與美國Arizona大學5年雙聯學位、韓國/新加坡/中國多校合作',
+    '✅ 校園新聞為本系專屬且具體：學生組織交接典禮、長榮航空與航太參訪、台灣港務公司董事長返校開講，近半年至少6則',
+    '✅ 學生愛分享頁6位撰文者皆確認為本系學生，格式統一（「文｜逢甲大學 運輸與物流學系 [姓名]」），5大分類清楚',
+    '招生管道（國內學士3＋碩士2＋境外生多梯次）皆指向 recurit_list 白名單系統，並標示「學士班報到率100%」',
+  ],
+  pain_points:[
+    '⚠️ 榮譽榜頁僅有標題「榮譽榜」與說明文字「各類比賽及考試得獎名單」，完全未列出任何具名學生獲獎案例，與導覽選單「特色亮點」定位不符，是本次全案例中「榮譽榜完全空白」的個案',
+    '歡迎頁未具名署名，僅第一人稱敘述搭配具體數字，訪客無法得知撰文者身分——經查主任為郭仲偉（成員頁有完整資料），建議串接補齊',
+    '特色亮點頁「三大研究中心」未列具體研究成果或計畫件數，「多元獎學金」「企業參訪交流」缺量化數據',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '🚩 榮譽榜頁補上實際得獎學生名單，目前完全空白與選單定位不符',
+    '歡迎頁補上系主任郭仲偉具名署名',
+    '特色亮點頁補上三大研究中心的具體成果',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://tl.fcu.edu.tw/',
+     notes:'✅ 項目四A：Hero輪播8張與長卡片輪播6張（特色課程、深碗課程、研究中心、校外參訪、企業實習、學士專業）皆為有效連結，內容豐富。SEO description留空。'},
+    {name:'招生／apply', url:'https://tl.fcu.edu.tw/apply/',
+     notes:'✅ 項目四B：國內學士班3管道＋碩士班2管道＋境外生多梯次，皆指向 recurit_list 白名單子路徑（college_star/college_apply/college_exam/oversea_united等），並標示「學士班報到率100%」。'},
+    {name:'學習－特色亮點／featured-highlights', url:'https://tl.fcu.edu.tw/featured-highlights/',
+     notes:'✅ 「全國第一個通過國際IEET認證的運輸物流系所」，與美國Arizona大學5年雙聯學位、韓國/新加坡/中國多校合作具名；⚠️「三大研究中心」「多元獎學金」「企業參訪交流」缺具體成果數字。'},
+    {name:'學習－榮譽榜／excellent', url:'https://tl.fcu.edu.tw/excellent/',
+     notes:'🚩 僅標題「榮譽榜」與說明文字「各類比賽及考試得獎名單」，完全未列出任何具名學生獲獎案例，是本次全案例「榮譽榜完全空白」的個案。'},
+    {name:'師資／faculty', url:'https://tl.fcu.edu.tw/faculty/',
+     notes:'依職稱分類完整（特聘教授/專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news', url:'https://tl.fcu.edu.tw/news/',
+     notes:'✅ 項目六：近半年至少6則，最新至2026.06.24，皆為本系專屬（學生組織交接典禮、長榮航空與航太參訪、台灣港務公司董事長返校開講）。'},
+    {name:'新聞與活動－學生愛分享／share', url:'https://tl.fcu.edu.tw/share/',
+     notes:'✅ 6位撰文者（李峻彥、王欣倩、陳偉庭、葉家彤、崔宏偉、蕭怡臻）皆標註「文｜逢甲大學 運輸與物流學系」，確認為本系學生，5大分類清楚。'},
+    {name:'關於－歡迎／greeting', url:'https://tl.fcu.edu.tw/greeting/',
+     notes:'⚠️ 未具名署名，「民國六十年起創系至迄今」「造育英才超過五千人」「三大研究中心」等數字具體，但缺撰文者身分，無照片。'},
+    {name:'成員／staff', url:'https://tl.fcu.edu.tw/staff/',
+     notes:'系主任郭仲偉信箱（cweikuo@o365.fcu.edu.tw）、分機（#4664）完整，但無照片。'},
+  ]
+},
+{
+  id:'lm', college:'建設學院', name:'土地管理學系',
+  url:'https://lm.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:51, d1:6, d2:10, d3:10, d4:6, d5:5, d6:8, d7:6,
+  highlights:[
+    '✅（結構查證）首頁確有「招生」導覽彈出選單，內含8個管道連結——初次regex掃描未能正確識別此彈出式選單結構，經原始碼二次查證後確認存在，非缺失',
+    '綜覽頁列出傑出系友分類（政界/商界/學界），呈現多元出路方向',
+    '首頁SEO description已填寫完整（土地管理、經濟、法規、政策架構說明）',
+    '系主任朱南玉具名於系所成員頁，聯絡資訊完整',
+  ],
+  pain_points:[
+    '🚩「學生愛分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生（與資訊電機學院多系呈現相同錯置名單），是本次第11個確認案例，且再次證實此問題已橫跨工程與科學學院、人文社會學院、資訊電機學院、建設學院四個學院，強烈指向全站共用資料池而非個別系所或學院層級的設定錯誤',
+    '⚠️ 招生彈出選單8個管道中，本國生4個（繁星/申請/考試分發/特殊選才）指向白名單，但境外生與碩士班入學2個管道仍連往籠統總覽頁（international_admissions、www.fcu.edu.tw/apply/）',
+    '產學聯盟頁僅有標語「串聯學界研發能量與業界實務需求」，完全無具名合作企業或案例，內容近乎空白',
+    '歡迎頁未具名署名，僅「土地，承載萬物，承載資源」等抽象概念性文字，無具體數字',
+    '校園新聞近半年9則皆為校級通用新聞，需另點「單位新聞」查看本系內容（本次未及查證該分頁）',
+    '系主任於系所成員頁無照片',
+  ],
+  quick_fixes:[
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第11個確認案例，證據持續指向全站共用資料池問題，建議提升優先級）',
+    '產學聯盟頁補上具名合作企業案例',
+    '境外生與碩士班招生管道補上白名單連結',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://lm.fcu.edu.tw/',
+     notes:'✅ 項目四A：Hero輪播3張與長卡片輪播5張（企業實習、國際學術交流、榮譽榜、Facebook粉專、學士專業）皆為有效連結。「招生」導覽彈出選單內含8個管道連結（初次掃描未識別，經原始碼二次查證確認存在）。SEO description已填寫完整。'},
+    {name:'招生（彈出選單）', url:'https://www.fcu.edu.tw/admissions/',
+     notes:'⚠️ 8個管道中，本國生4個（繁星/申請/考試分發/特殊選才）指向 recurit_list 白名單，境外生與碩士班入學2個管道仍連往籠統總覽頁（international_admissions、www.fcu.edu.tw/apply/）。'},
+    {name:'產學聯盟／產學聯盟', url:'https://lm.fcu.edu.tw/產學聯盟/',
+     notes:'🚩 僅標語「串聯學界研發能量與業界實務需求 積極促進資源整合」，無任何具名合作企業、專案或成果，內容近乎空白。'},
+    {name:'師資／teachers', url:'https://lm.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特約講座/專任教授/副教授/助理教授、兼任教授/副教授/助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://lm.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，但皆為校級通用新聞（申請入學人數冠軍、名譽博士、辦學績效等），需另點「單位新聞」查看本系內容。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://lm.fcu.edu.tw/share-list/',
+     notes:'🚩 已查證顯示經濟系、材料系、資工系、行銷系、機電系等他系學生心得，與資訊電機學院多系錯置名單重疊，確認為第11個資料錯置案例，證實問題已橫跨四個學院。'},
+    {name:'關於－歡迎／歡迎', url:'https://lm.fcu.edu.tw/歡迎/',
+     notes:'⚠️ 未具名署名，「土地，承載萬物，承載資源」「讓眾生得以安居樂業、永續發展」等抽象概念性文字，無具體數字，無照片。'},
+    {name:'關於－綜覽／綜覽', url:'https://lm.fcu.edu.tw/綜覽/',
+     notes:'✅ 傑出系友按政界/商界/學界分類列出，呈現多元出路方向，但缺成立年份、學生人數、就業率統計。'},
+    {name:'系所成員／系所成員', url:'https://lm.fcu.edu.tw/系所成員/',
+     notes:'系主任朱南玉信箱（nychu@fcu.edu.tw）、分機（#4700/4716）完整，但無照片。'},
+  ]
+},
+{
+  id:'mppm', college:'建設學院', name:'專案管理碩士在職學位學程',
+  url:'https://mppm.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:64, d1:10, d2:11, d3:10, d4:6, d5:5, d6:17, d7:5,
+  highlights:[
+    '畢業校友分享頁具名8位校友案例（賴瑞桂-修捷客科技負責人、李寶雲-漢翔航空工程師、江昇峰-黎明工程顧問水工部經理、蔡宗航-臺灣管理顧問業產業工會理事長等），涵蓋政府/教育/軍方/製造/資訊/金融/新創/工程顧問多元領域，是本次全案例出路資訊最具體的個案之一',
+    '綜覽頁沿革具體：民國103年（2014年）成立，並列出104-112學年招生人數趨勢（20人→30人→37人）',
+    '歡迎頁強調「全台目前唯一一所取名為『專案管理』的碩士在職學位學程」稀缺性定位',
+    '招生頁提供115學年度招生簡章PDF與 www.fcu.edu.tw/recurit_list/master_job_115/ 白名單連結',
+  ],
+  pain_points:[
+    '🚩「學生愛分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生（與資訊電機學院及土地管理學系呈現相同錯置名單），是本次第12個確認案例，同一份錯誤名單已橫跨工程與科學學院、人文社會學院、資訊電機學院、建設學院四個學院，證據持續指向全站共用資料池',
+    '招生頁本身未列出具體招生名額或評分方式，需下載PDF簡章才能得知細節',
+    '歡迎頁未具名署名，僅以「主任的話」為標題，訪客無法得知撰文者身分——經查主任為楊朝仲（成員頁有完整資料），建議串接補齊',
+    '校園新聞近半年9則皆為校級通用新聞，無本學程專屬報導',
+    '系主任於成員頁無照片',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第12個確認案例）',
+    '招生頁補上具體招生名額與評分方式',
+    '歡迎頁補上系主任楊朝仲具名署名',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://mppm.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播2張（2022新聞、白名單連結）與長卡片輪播5張（畢業校友分享、實務導向、國際交流、外連地理資訊研究、碩士專業）皆為有效連結。SEO description留空。'},
+    {name:'招生／apply', url:'https://mppm.fcu.edu.tw/apply/',
+     notes:'⚠️ 提供115學年度碩士在職專班招生簡章PDF與 www.fcu.edu.tw/recurit_list/master_job_115/ 白名單連結，但頁面本身未列具體招生名額或評分方式，需查閱PDF簡章。'},
+    {name:'學習－畢業校友分享／畢業校友分享', url:'https://mppm.fcu.edu.tw/畢業校友分享/',
+     notes:'✅ 具名8位校友案例（賴瑞桂/李寶雲/王品文/江昇峰/邱亮凱/蔡宗航/黃文明/顏淑婷），含任職公司與職位，涵蓋政府/教育/軍方/製造/資訊/金融/新創/工程顧問多元領域，是本次全案例出路資訊最具體個案之一。'},
+    {name:'師資／teachers', url:'https://mppm.fcu.edu.tw/teachers/',
+     notes:'待複核師資完整度。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://mppm.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，但皆為校級通用新聞（招生績效、EUR-ACE認證、畢典等），無本學程專屬報導。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://mppm.fcu.edu.tw/share-list/',
+     notes:'🚩 已查證顯示經濟系、材料系、資工系、行銷系、機電系等他系學生心得（江晨毓/葉馨/林雨杭/布施帆海/蘇至生/楊孟憲/蘇庭恩/林楷祐），與同一份跨院系錯置名單重疊，確認為第12個資料錯置案例。'},
+    {name:'關於－歡迎／歡迎', url:'https://mppm.fcu.edu.tw/歡迎/',
+     notes:'⚠️ 未具名署名，「全台目前唯一一所取名為『專案管理』的碩士在職學位學程」稀缺性定位具體，四學期課程架構清楚，但缺撰文者身分與量化數字。'},
+    {name:'關於－綜覽／綜覽', url:'https://mppm.fcu.edu.tw/綜覽/',
+     notes:'✅ 民國103年（2014年）成立，104-112學年招生人數趨勢具體（20人→30人→37人），但缺當前學生總人數與就業率統計。'},
+    {name:'成員／成員', url:'https://mppm.fcu.edu.tw/成員/',
+     notes:'系主任楊朝仲信箱（ccy@fcu.edu.tw）、分機（3226）、研究專長（系統動力學/水資源規劃/人工智慧方法）完整，但無照片。'},
+  ]
+},
+{
+  id:'mcd', college:'建設學院', name:'建設碩士在職學位學程',
+  url:'https://mcd.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:52, d1:6, d2:12, d3:9, d4:6, d5:5, d6:9, d7:5,
+  highlights:[
+    '三組別定位清楚：不動產經營管理組／國土城鄉規劃與運輸管理組／智慧城市與營建防災組，涵蓋建設學院多元專業',
+    '首頁Hero與長卡片輪播共10張皆為有效連結，含線上報名系統、Google表單、日本媒體報導連結',
+    '系主任謝政穎具名於成員頁，聯絡資訊完整',
+    '招生頁提供 www.fcu.edu.tw/recurit_list/master_job_115/ 白名單連結',
+  ],
+  pain_points:[
+    '🚩「學生愛分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生，是本次第13個確認案例，同一份錯誤名單持續橫跨多個學院，且三個分組（不動產/國土城鄉/智慧城市）皆無學程本身學生投稿',
+    '🚩 系友表現頁僅有106-109學年度分頁標籤，完全沒有任何校友案例、姓名或任職公司內容，頁面架構存在但內容從未填入',
+    '歡迎頁未具名署名，僅「中部唯一最大建設專業學長群」「全國也是中部地區唯一」等稀缺性宣稱，缺具體數字佐證',
+    '招生頁本身無具體名額或評分方式，完全依賴轉址至校級頁面',
+    '校園新聞近半年10則皆為校級通用新聞，無本學程專屬報導',
+    '系主任與助教於成員頁皆無照片（頁面標題「親切的主任 熱情的助教 都在這」與實際呈現有落差）',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第13個確認案例）',
+    '🚩 系友表現頁補上實際校友案例，目前4個學年度分頁皆為空白',
+    '歡迎頁補上系主任謝政穎具名署名',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://mcd.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播5張（白名單連結、Google表單、國際交流新聞、日本媒體報導、綜覽）與長卡片輪播5張（線上報名系統、表單、Facebook、實務導向、國際交流）皆為有效連結。SEO description留空。'},
+    {name:'招生／招生', url:'https://mcd.fcu.edu.tw/招生/',
+     notes:'⚠️ 僅提供 www.fcu.edu.tw/recurit_list/master_job_115/ 白名單連結，本頁未列具體招生名額、報名時程或評分方式，完全依賴轉址查詢。'},
+    {name:'關於－不動產經營管理組／about/real-estate-management-team', url:'https://mcd.fcu.edu.tw/about/real-estate-management-team/',
+     notes:'待複核組別課程具體度。'},
+    {name:'關於－國土城鄉規劃與運輸管理組／about/land-urban-and-rural-planning-and-transportation-management-team', url:'https://mcd.fcu.edu.tw/about/land-urban-and-rural-planning-and-transportation-management-team/',
+     notes:'待複核組別課程具體度。'},
+    {name:'關於－智慧城市與營建防災組／about/smart-city-and-construction-disaster-prevention-team', url:'https://mcd.fcu.edu.tw/about/smart-city-and-construction-disaster-prevention-team/',
+     notes:'待複核組別課程具體度；此組別名稱與另一儀表板記錄的獨立系所「msc智慧城市碩士學位學程」相同，且msc的URL與mcd完全一致，需向校方確認msc是否已整併為mcd底下的分組而非獨立學程。'},
+    {name:'系友表現／系友表現', url:'https://mcd.fcu.edu.tw/系友表現/',
+     notes:'🚩 僅有106/107/108/109學年度分頁標籤結構，完全沒有任何校友姓名、任職公司或成就內容，是本次全案例「頁面架構存在但內容從未填入」的明確個案。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://mcd.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少10則，最新至2026.06.12，皆為校級通用新聞，無本學程專屬報導。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://mcd.fcu.edu.tw/share-list/',
+     notes:'🚩 已查證顯示經濟系、材料系、資工系、行銷系、機電系等他系學生心得，確認為第13個資料錯置案例，三個分組皆無本學程學生投稿。'},
+    {name:'關於－歡迎／歡迎', url:'https://mcd.fcu.edu.tw/歡迎/',
+     notes:'⚠️ 未具名署名，「中部唯一最大建設專業學長群」「全國也是中部地區唯一」等稀缺性宣稱缺具體數字佐證，「職場進修 這裡出發 解鎖成就」為激勵性語氣。'},
+    {name:'成員／成員', url:'https://mcd.fcu.edu.tw/成員/',
+     notes:'系主任謝政穎信箱（jyshieh@fcu.edu.tw）、分機（3364）與助教蔡玗庭聯絡資訊皆完整，但兩者皆無照片，與頁面標題「親切的主任 熱情的助教」承諾不符。'},
+  ]
+},
+{
+  id:'msc', college:'建設學院', name:'智慧城市碩士學位學程',
+  url:'https://mcd.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；重大發現見highlights，未獨立進行選單全頁複查）', evaluated:true,
+  overall:52, d1:6, d2:12, d3:9, d4:6, d5:5, d6:9, d7:5,
+  highlights:[
+    '沿用建設碩士在職學位學程（mcd）之查證結果，見下方說明',
+  ],
+  pain_points:[
+    '🚩【重大發現】儀表板記錄「智慧城市碩士學位學程」網址與「建設碩士在職學位學程」（mcd）完全相同（皆為 mcd.fcu.edu.tw），經實際瀏覽該網站確認：「智慧城市與營建防災組」目前僅是mcd底下的三個分組之一（另兩組為不動產經營管理組、國土城鄉規劃與運輸管理組），並非獨立運作的學程網站——強烈建議向校方確認：msc是否已整併為mcd的分組而非獨立學程？若已整併，此筆記錄應從儀表板移除或標註「已併入mcd」，而非以獨立系所身分重複健檢；若仍為獨立招生單位，則需要校方提供其實際的獨立網址',
+    '由於網址與mcd完全相同，本次評分數字直接沿用mcd的查證結果（含相同的學生愛分享資料錯置、系友表現頁空白等問題），並非針對msc獨立進行的複查',
+  ],
+  quick_fixes:[
+    '🚩 優先向校方確認msc與mcd的實際關係（整併/分組/獨立），這是本次全案例中唯一發現「兩個儀表板記錄指向完全相同網址」的個案',
+  ],
+  page_notes:[
+    {name:'（與mcd相同網站）', url:'https://mcd.fcu.edu.tw/',
+     notes:'🚩 網址與「建設碩士在職學位學程」（mcd）完全相同。實際瀏覽確認「智慧城市與營建防災組」（/about/smart-city-and-construction-disaster-prevention-team/）僅為mcd網站導覽選單「關於」底下的三個分組之一，並非獨立學程首頁——本筆記錄的健檢意義存疑，詳見mcd的完整頁面複查記錄。'},
+  ]
+},
+{
+  id:'gche', college:'建設學院', name:'建設規劃與工程博士學位學程',
+  url:'https://gche.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:48, d1:6, d2:11, d3:7, d4:6, d5:5, d6:8, d7:5,
+  highlights:[
+    '定位稀缺：「全國唯一跨領域專業實務學習博士班」',
+    '首頁Hero輪播含1張直接指向 www.fcu.edu.tw/recurit_list/dr_exam/ 白名單的連結',
+    '系主任陳建元具名於成員頁，聯絡資訊完整',
+    '長卡片輪播5張（課程實作、校外參訪、專題演講、海外移地教學、博士專業）皆有效，內容類別多元',
+  ],
+  pain_points:[
+    '🚩「學生愛分享」頁顯示的是經濟系、材料系、資工系、行銷系、機電系等他系學生，是本次第14個確認案例，同一份錯誤名單持續在跨學院站點重複出現',
+    '⚠️（雙重查證後確認）招生頁本身的3個管道連結（博士班甄試/考試/境外生）皆指向籠統的 www.fcu.edu.tw/apply/ 總覽頁，僅首頁Hero輪播另外提供1張連往 recurit_list/dr_exam/ 白名單的投影片——訪客若直接進入招生頁查詢，會被導向較不明確的總覽頁而非白名單頁',
+    '歡迎頁未具名署名，僅「Take challenges and Enjoy learning」等激勵性文字，缺量化數字',
+    '綜覽頁僅標題「全國唯一跨領域專業實務學習博士班」，未展開具體內容，缺成立年份、學生人數、就業率',
+    '校園新聞近半年10則皆為校級通用新聞，無本學程專屬報導',
+    '系主任於成員頁無照片',
+  ],
+  quick_fixes:[
+    '🚩 回報網管「學生愛分享」頁資料來源設定錯誤（第14個確認案例）',
+    '招生頁3個管道連結改為指向白名單系統（比照首頁Hero輪播的做法）',
+    '歡迎頁補上系主任陳建元具名署名',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://gche.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播3張（含1張直連 recurit_list/dr_exam/ 白名單、1則新聞、招生頁入口）與長卡片輪播5張（課程實作/校外參訪/專題演講/海外移地教學/博士專業）皆為有效連結。SEO description留空。'},
+    {name:'招生／招生', url:'https://gche.fcu.edu.tw/招生/',
+     notes:'⚠️（已雙重查證：WebFetch判讀＋原始碼grep確認一致）博士班甄試入學／考試入學／境外生3個管道連結皆指向籠統的 www.fcu.edu.tw/apply/ 總覽頁，與首頁Hero輪播另外提供的白名單連結不一致，訪客體驗不統一。'},
+    {name:'師資／teachers', url:'https://gche.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特聘教授/專任教授/副教授/助理教授、兼任助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://gche.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少10則，最新至2026.06.12，共22頁新聞列表，但皆為校級通用新聞，無本學程專屬報導。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://gche.fcu.edu.tw/share-list/',
+     notes:'🚩 已查證顯示經濟系、材料系、資工系、行銷系、機電系等他系學生心得，確認為第14個資料錯置案例。'},
+    {name:'關於－歡迎／歡迎', url:'https://gche.fcu.edu.tw/歡迎/',
+     notes:'⚠️ 未具名署名，「Take challenges and Enjoy learning」激勵性文字，提及博士班生來源多元（應屆碩士生/企業主管/政府單位高階首長），但缺量化數字，無照片。'},
+    {name:'關於－綜覽／綜覽', url:'https://gche.fcu.edu.tw/綜覽/',
+     notes:'⚠️ 僅標題「全國唯一跨領域專業實務學習博士班」，未展開具體內容，缺成立年份、學生人數、就業率統計。'},
+    {name:'成員／成員', url:'https://gche.fcu.edu.tw/成員/',
+     notes:'系主任陳建元信箱（cyuan@o365.fcu.edu.tw）、分機（4705）完整，助教王育琦聯絡資訊亦完整，但皆無照片。'},
+  ]
+},
+{
+  id:'imsc', college:'建設學院', name:'智慧城市國際碩士在職學位學程越南境外專班',
+  url:'https://imsc.fcu.edu.tw/', eval_date:'2026-07-24（評分標準 v5.0；已依選單一二層全頁複查；重大命名疑義見highlights）', evaluated:true,
+  overall:46, d1:6, d2:10, d3:6, d4:6, d5:5, d6:8, d7:5,
+  highlights:[
+    '綜覽頁沿革具體：民國106年（2017年）成立，107年（2018年）開始招生',
+    '長卡片輪播6張（課程實作、智慧城市應用、企業場域實作等）皆有效連結',
+  ],
+  pain_points:[
+    '🚩【重大命名疑義】儀表板記錄本學程為「智慧城市國際碩士在職學位學程越南境外專班」，但實際瀏覽網站（首頁title、綜覽頁）全文顯示為單純的「智慧城市碩士學位學程」，全站遍尋不到「越南」「境外」等關鍵字，且系主任（陳建元）、聯絡方式（wangychi@fcu.edu.tw、分機3252）皆與同建設學院的gche建設規劃與工程博士學位學程完全相同——強烈懷疑儀表板記錄的imsc系名與實際網站內容不符，或該越南境外專班另有專屬網址未被記錄，建議向校方確認正確網址與系所對應關係',
+    '⚠️ 與msc（智慧城市碩士學位學程，URL與mcd相同）也共用幾乎相同的中文系名「智慧城市碩士學位學程」，本學院至此已出現三筆疑似重疊或混淆的智慧城市相關記錄（msc／imsc／mcd的智慧城市與營建防災組），建議校級單位一次性釐清三者關係並更新儀表板',
+    '招生頁2個管道（碩士班／境外生）皆指向籠統的 www.fcu.edu.tw/apply/ 總覽頁，未見白名單連結',
+    '歡迎頁未具名署名，僅提及「自110年學年度起調整為中文為主的授課方式」政策性說明，缺量化數字',
+    '校園新聞近半年9則皆為校級通用新聞，無本學程專屬報導',
+    '系主任於成員頁無照片',
+  ],
+  quick_fixes:[
+    '🚩 優先向校方確認imsc的正確網址與系所對應關係，目前記錄的網址內容與系名（越南境外專班）完全不符',
+    '招生頁補上白名單連結',
+    '歡迎頁補上主任具名署名',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://imsc.fcu.edu.tw/',
+     notes:'🚩 首頁title顯示「智慧城市碩士學位學程」，非儀表板記錄的「越南境外專班」。Hero輪播僅1張（連至綜覽頁），長卡片輪播6張（課程實作/智慧城市應用/企業場域實作/獎學金/碩博士專業/學生分享）皆有效。SEO description留空。'},
+    {name:'招生／招生', url:'https://imsc.fcu.edu.tw/招生/',
+     notes:'⚠️ 碩士班／境外生2個管道皆指向籠統的 www.fcu.edu.tw/apply/ 總覽頁，未見recurit_list白名單連結，亦未特別提及越南招生對象或流程。'},
+    {name:'師資／teachers', url:'https://imsc.fcu.edu.tw/teachers/',
+     notes:'待複核師資完整度。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://imsc.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，皆為校級通用新聞，無本學程專屬報導。'},
+    {name:'關於－歡迎／歡迎', url:'https://imsc.fcu.edu.tw/歡迎/',
+     notes:'⚠️ 未具名署名，提及「自110年學年度起調整為中文為主的授課方式」「鼓勵學生以少於兩年的時間完成學位」政策性說明，但缺撰文者身分與量化數字，無照片。'},
+    {name:'關於－綜覽／綜覽', url:'https://imsc.fcu.edu.tw/綜覽/',
+     notes:'🚩 民國106年（2017年）成立、107年（2018年）開始招生具體，但全頁未提及越南或任何境外專班相關資訊，與儀表板記錄的系名完全不符。'},
+    {name:'成員／成員', url:'https://imsc.fcu.edu.tw/成員/',
+     notes:'🚩 系主任陳建元、聯絡方式（cyuan@o365.fcu.edu.tw、分機4705；另招生頁聯絡為wangychi@fcu.edu.tw、分機3252）與同建設學院的gche（建設規劃與工程博士學位學程）完全相同，強烈暗示這兩筆記錄可能指向同一實際運作單位。'},
+  ]
+},
+
+/* ── 經營管理學院 ── */
+{
+  id:'smd', college:'經營管理學院', name:'經營管理學院',
+  url:'https://smd.fcu.edu.tw/', eval_date:'2026-07-25（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:62, d1:10, d2:13, d3:9, d4:6, d5:7, d6:12, d7:5,
+  highlights:[
+    '院辦公室頁具名4位負責人（院長林豐智、副院長李元恕、執行長董正玫、副執行長吳尚和），聯絡資訊完整，是本次全案例中負責人具名數量最多的個案',
+    '✅ 經管院消息頁為本院專屬且具體，近半年至少5則（113級畢業典禮、「菁英聚力，榮耀二十」20周年活動、第六屆博觀講堂結業、2025產業論文寫作研討會）',
+    'EMBA社群生態豐富：11個校友社團（高爾夫/單車/樂跑/慢壘/羽球/熱舞/攝影/重機/登山協會等）、EMBA學術發展基金會、聯誼會、彰化校友協進會，呈現高度活躍的校友網絡',
+    '招生資訊區塊完整7個子項（說明會/組別資訊/報考資格/簡章下載/問答/線上報名/聯絡諮詢），Hero與長卡片輪播共11張皆為有效連結',
+  ],
+  pain_points:[
+    '學院簡介頁未具名院長或呈現照片，亦缺成立年份、學生人數、校友總人數等統計數字，與院辦公室頁的4人具名形成落差（建議串接）',
+    '⚠️ 招生資訊頁本身及其7個子項皆未見指向 recurit_list 或 national_list 白名單的連結，可能因EMBA碩士在職專班招生機制與一般學制不同，建議與校級單位確認正確歸屬',
+    '名人風雲錄頁（校友案例展示區）經初步檢視未顯示具體校友姓名或任職公司內容，建議人工複核確認',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '學院簡介頁串接院辦公室頁的院長林豐智具名資訊',
+    '確認招生資訊是否應連往白名單系統或說明本身即為正式管道',
+    '複核並補齊名人風雲錄頁的具名校友案例',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://smd.fcu.edu.tw/',
+     notes:'項目四A：Hero輪播5張（全球企業領袖班、天下雜誌報導、Facebook貼文、招生資訊）與長卡片輪播6張（招生簡章PDF、線上報名、博觀講堂、報名系統）皆為有效連結，內容豐富。SEO description留空。'},
+    {name:'招生資訊／admissions', url:'https://smd.fcu.edu.tw/admissions/',
+     notes:'⚠️ 項目四B：7個子項（招生說明會/各組特色與修業方式/報考資格/招生資料下載/招生問與答/網路報名/諮詢聯絡方式）架構完整，但未見指向recurit_list或national_list白名單的連結，需向校方確認EMBA專班的正式招生系統歸屬。'},
+    {name:'學院簡介－關於EMBA／about', url:'https://smd.fcu.edu.tw/about/',
+     notes:'⚠️ 「具國際觀的企業家領導人」定位與五項核心能力說明清楚，但未具名院長或呈現照片，缺成立年份、學生人數、校友人數統計。'},
+    {name:'學院簡介－院辦公室／office', url:'https://smd.fcu.edu.tw/office/',
+     notes:'✅ 具名4位負責人（院長林豐智分機6010、副院長李元恕分機6030/4273、執行長董正玫分機6040/4249、副執行長吳尚和分機6025），聯絡資訊完整，但皆無照片。'},
+    {name:'師資／teachers', url:'https://smd.fcu.edu.tw/teachers/',
+     notes:'依校內師資/校外師資/業界師資三類分列，呈現EMBA特有的多元師資結構。'},
+    {name:'新聞與活動－經管院消息／events', url:'https://smd.fcu.edu.tw/events/',
+     notes:'✅ 項目六：近半年至少5則，最新至2026.06.07，皆為本院專屬（113級畢業典禮、「菁英聚力，榮耀二十」20周年活動、第六屆博觀講堂結業、產業論文寫作研討會）。'},
+    {name:'校友－名人風雲錄／名人風雲錄', url:'https://smd.fcu.edu.tw/名人風雲錄/',
+     notes:'⚠️ 頁面雖以「名人風雲錄」為名，但初步檢視未顯示具體校友姓名、任職公司或成就內容，建議人工複核確認實際呈現狀況。'},
+  ]
+},
+
+/* ── 創能學院 ── */
+{
+  id:'aita', college:'創能學院', name:'人工智慧技術與應用學士學位學程',
+  url:'https://aita.fcu.edu.tw/', eval_date:'2026-07-25（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:55, d1:7, d2:8, d3:13, d4:6, d5:5, d6:11, d7:5,
+  highlights:[
+    '產業合作具名：與美光（Micron）合作「記憶體生產製造人才培育微學程」、台積電「半導體學程」及「智慧製造學程」、美國辛辛那提大學雙聯學位',
+    '招生頁5個管道（繁星/申請/考試分發/身障甄試/轉學）皆指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '大三先修碩士班機制具體：「約一年時間」完成碩士學位，可節省20萬元以上學費',
+  ],
+  pain_points:[
+    '⚠️「學生愛分享」頁3位撰文者中僅1位（王富貴）確認為本學程學生，另2位（廖軒挺-光電系、陳畊甫-自控系）為他系學生——本次僅備註說明，依使用者指示不計入扣分（根本原因可能與che/光電案例相同，源於後台「指定Tag」欄位未正確設定，建議請本系網管一併確認該欄位）',
+    '台積電半導體學程頁僅提及「共同規劃推出」但無合作細節、課程清單或錄取名額，需點外部連結查詢',
+    '歡迎頁與綜覽頁皆未具名負責人姓名或照片，缺成立年份、學生人數、就業率',
+    '本頁無Hero輪播元件（非缺陷，首頁設計本身無此區塊），長卡片輪播僅3張，數量偏少',
+    '校園新聞近半年9則皆為校級通用新聞，需另點「單位新聞」查看本系內容',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '請本系網管檢查「學生愛分享」模組後台的「指定Tag」欄位是否正確設定為本系',
+    '台積電半導體學程頁補上具體課程清單與合作細節',
+    '歡迎頁補上負責人具名署名',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://aita.fcu.edu.tw/',
+     notes:'項目四A：本頁無Hero輪播元件（非缺陷）。長卡片輪播3張（招生、ColleGo、申請入學準備指引）皆有效，但數量偏少。SEO description留空。'},
+    {name:'招生／recruit', url:'https://aita.fcu.edu.tw/recruit/',
+     notes:'✅ 項目四B：5個管道（繁星/申請/考試分發/身障甄試/轉學）皆指向 www.fcu.edu.tw/recurit_list/ 白名單系統。大三先修碩士班機制具體：約一年完成碩士，可省20萬元以上學費。'},
+    {name:'研修－台積電半導體學程／tsmc_program', url:'https://aita.fcu.edu.tw/tsmc_program/',
+     notes:'⚠️ 提及「共同規劃推出台積電半導體『半導體學程』及『智慧製造學程』」與「修畢學程且成績優異，錄取台積時可獲學程獎勵金」，但無合作細節、課程清單、錄取名額或獎勵金具體金額。'},
+    {name:'師資／teachers', url:'https://aita.fcu.edu.tw/teachers/',
+     notes:'依職稱分類完整（特聘教授/專任教授/副教授/助理教授/講師、兼任助理教授）。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://aita.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年至少9則，最新至2026.06.12，但皆為校級通用新聞，需另點「單位新聞」查看本系內容。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://aita.fcu.edu.tw/share-list/',
+     notes:'⚠️ 3位撰文者中僅王富貴標註「人工智慧技術與應用學士學位學程」，另2位（廖軒挺-光電系、陳畊甫-自控系）為他系學生，備註說明、不計入扣分。'},
+    {name:'關於－歡迎／welcome', url:'https://aita.fcu.edu.tw/welcome/',
+     notes:'⚠️ 未具名署名，僅「歡迎加入AI學程！準備好用AI改變世界了嗎?」標語，無照片、無具體數字。'},
+    {name:'關於－綜覽／overview', url:'https://aita.fcu.edu.tw/overview/',
+     notes:'⚠️ 「企業最重視的AI能力」定位說明（培養理解商業流程並能選用適切AI技術的人才，而非僅會寫程式），但缺成立年份、學生人數、就業率統計。'},
+  ]
+},
+{
+  id:'aitm', college:'創能學院', name:'人工智慧科技與管理碩士學位學程',
+  url:'https://aitm.fcu.edu.tw/', eval_date:'2026-07-25（評分標準 v5.0；已依選單一二層全頁複查）', evaluated:true,
+  overall:59, d1:7, d2:7, d3:14, d4:6, d5:5, d6:15, d7:5,
+  highlights:[
+    '「學界菁英 業界領袖」頁具名6位業界領袖師資及其企業（大聯大投資控股-葉福海副董事長、欣銓科技-張季明博士、志聖工業-梁又文總經理、華碩電腦-謝明傑營運長、台積電-楊光磊博士、鴻海研究院-李維斌執行長），是本次全案例產業合作具名度最佳個案',
+    '招生頁管道極完整：碩士甄試/考試＋學士繁星/申請/考試分發/身障甄試＋轉學＋境外生，共8+個管道皆指向 www.fcu.edu.tw/recurit_list/ 白名單系統',
+    '「AI策劃者」與「跨域整合領導者」雙軌定位清楚，先修碩士機制具體（4年+1.5年取代傳統2年碩士）',
+  ],
+  pain_points:[
+    '⚠️「學生愛分享」頁3位撰文者皆非本學程學生（王富貴-人工智慧技術與應用學士學位學程/aita姊妹學程、廖軒挺-光電系、陳畊甫-自控系）——與姊妹學程aita呈現完全相同的錯置名單，備註說明、依使用者指示不計入扣分（根本原因可能與che/光電案例相同，源於後台「指定Tag」欄位未正確設定）',
+    '綜覽頁未具名負責人姓名或照片，缺成立年份、學生人數、就業率統計',
+    '本頁無Hero輪播元件（非缺陷），長卡片輪播僅1張，數量為本次全案例最少個案之一',
+    '校園新聞皆為校級通用新聞，無本學程專屬報導',
+    '首頁 SEO description 留空',
+  ],
+  quick_fixes:[
+    '請本系與aita共同網管檢查「學生愛分享」模組後台的「指定Tag」欄位設定',
+    '綜覽頁補上負責人具名資訊與具體數字',
+    '首頁補充更多長卡片輪播內容，目前僅1張',
+  ],
+  page_notes:[
+    {name:'首頁', url:'https://aitm.fcu.edu.tw/',
+     notes:'項目四A：本頁無Hero輪播元件（非缺陷）。長卡片輪播僅1張（業界領袖師資頁），數量為本次全案例最少個案之一。SEO description留空。'},
+    {name:'招生／recruit', url:'https://aitm.fcu.edu.tw/recruit/',
+     notes:'✅ 項目四B：碩士甄試/考試＋學士繁星/申請/考試分發/身障甄試＋轉學（暑假/寒假）共8+管道，皆指向 www.fcu.edu.tw/recurit_list/ 白名單系統，是本次全案例管道覆蓋最完整之一。'},
+    {name:'師資－學界菁英業界領袖／corporationaitm', url:'https://aitm.fcu.edu.tw/corporationaitm/',
+     notes:'✅ 具名6位業界領袖師資及企業（大聯大葉福海/欣銓科技張季明/志聖工業梁又文/華碩謝明傑/台積電楊光磊/鴻海研究院李維斌），是本次全案例產業合作具名度最佳個案。'},
+    {name:'新聞與活動－校園新聞／news-list', url:'https://aitm.fcu.edu.tw/news-list/',
+     notes:'⚠️ 項目六：近半年新聞皆為校級通用新聞（申請入學冠軍、EUR-ACE認證、NVIDIA演講活動等），無本學程專屬報導，共22頁新聞列表。'},
+    {name:'新聞與活動－學生愛分享／share-list', url:'https://aitm.fcu.edu.tw/share-list/',
+     notes:'⚠️ 3位撰文者（王富貴/廖軒挺/陳畊甫）皆非本學程學生，與姊妹學程aita完全相同的錯置名單，備註說明、不計入扣分。'},
+    {name:'關於－綜覽／overview', url:'https://aitm.fcu.edu.tw/overview/',
+     notes:'⚠️ 「在快速變動的AI浪潮中，企業需要的已不是單一技能的人才」定位敘述，但未具名負責人，缺成立年份、學生人數、就業率統計。'},
+  ]
+},
+];
+
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════ */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function safeUrl(u){u=String(u==null?'':u);return /^https?:\/\//i.test(u)?u:'#';}
+function gradeKey(s){return s>=80?'A':s>=70?'B':s>=60?'C':'D';}
+function gradeColor(s){return s>=80?'#16a34a':s>=70?'#2563eb':s>=60?'#d97706':'#dc2626';}
+function pct(v,mx){return Math.round(v/mx*100);}
+
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════════ */
+let radarChart = null;
+
+function buildSidebar(){
+  const body = document.getElementById('sb-body');
+  const colleges = [...new Set(DEPTS.map(d=>d.college))];
+  colleges.forEach(col=>{
+    const depts = DEPTS.filter(d=>d.college===col);
+    const hdr = document.createElement('div');
+    hdr.className='col-h'; hdr.textContent=col;
+    body.appendChild(hdr);
+    depts.forEach(d=>{
+      const el = document.createElement('div');
+      el.className='di'; el.id='di-'+d.id;
+      const scoreHtml = d.evaluated
+        ? `<span class="di-score s${gradeKey(d.overall)}">${d.overall}</span>`
+        : `<span class="di-score sP">—</span>`;
+      el.innerHTML=`<div class="di-n">${esc(d.name)}</div>${scoreHtml}`;
+      el.onclick=()=>selectDept(d.id);
+      body.appendChild(el);
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════════════════ */
+function updateTopbar(){
+  const evaled = DEPTS.filter(d=>d.evaluated);
+  const avg = evaled.length ? Math.round(evaled.reduce((a,d)=>a+d.overall,0)/evaled.length) : null;
+  document.getElementById('tb-evaled').textContent = evaled.length;
+  document.getElementById('tb-total').textContent  = DEPTS.length;
+  document.getElementById('tb-avg').textContent    = avg||'—';
+  document.getElementById('tb-bar-f').style.width  = (DEPTS.length?Math.round(evaled.length/DEPTS.length*100):0)+'%';
+}
+
+/* ═══════════════════════════════════════════════════════
+   SELECT DEPT
+═══════════════════════════════════════════════════════ */
+function selectDept(id){
+  document.querySelectorAll('.di').forEach(e=>e.classList.remove('act'));
+  const el = document.getElementById('di-'+id);
+  if(el) el.classList.add('act');
+  closeSidebar();
+  const d = DEPTS.find(x=>x.id===id);
+  if(!d) return;
+  d.evaluated ? renderEvaluated(d) : renderPending(d);
+}
+
+function renderPending(d){
+  document.getElementById('mn').innerHTML=`
+  <div class="card">
+    <div class="dept-hd">
+      <div class="score-circle" style="background:#94a3b8;font-size:13px;line-height:1.3;text-align:center;">待<br>評估</div>
+      <div class="dept-info">
+        <div class="college-tag">${esc(d.college)}</div>
+        <h2>${esc(d.name)}</h2>
+        <a class="url-link" href="${esc(safeUrl(d.url))}" target="_blank" rel="noopener noreferrer">${esc(d.url)} ↗</a>
+        <div class="eval-date">尚未進行健檢</div>
+      </div>
+    </div>
+  </div>
+  <div class="pending-note">
+    <i class="ti ti-clock" style="font-size:28px;display:block;margin-bottom:.6rem;color:#94a3b8;"></i>
+    此學系網站尚待排入健檢作業
+  </div>`;
+}
+
+function renderEvaluated(d){
+  const gc=gradeColor(d.overall);
+  document.getElementById('mn').innerHTML=`
+  <div class="card">
+    <div class="dept-hd">
+      <div class="score-circle" style="background:${gc};">${d.overall}</div>
+      <div class="dept-info" style="flex:1">
+        <div class="college-tag">${esc(d.college)}</div>
+        <h2>${esc(d.name)}</h2>
+        <a class="url-link" href="${esc(safeUrl(d.url))}" target="_blank" rel="noopener noreferrer">${esc(d.url)} ↗</a>
+        <div class="eval-date">健檢日期：${esc(d.eval_date)}</div>
+      </div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab(0)">📊 健檢總覽</button>
+    <button class="tab" onclick="switchTab(1)">📄 逐頁評分</button>
+    <button class="tab" onclick="switchTab(2)">📋 評分標準</button>
+  </div>
+
+  <!-- tab 0 -->
+  <div class="tab-panel on" id="tp0">
+    <!-- Row 1: radar (left) + dim bars (right) -->
+    <div class="two-col" style="margin-bottom:.8rem;">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title"><i class="ti ti-radar"></i> 七項雷達圖</div>
+        <div class="radar-wrap"><canvas id="radarCanvas"></canvas></div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title"><i class="ti ti-chart-bar"></i> 各項目得分</div>
+        <div class="dim-grid" id="dimBars"></div>
+      </div>
+    </div>
+    <!-- Row 2: highlights, problems, quick fixes — single column -->
+    <div class="card" style="margin-bottom:.8rem;">
+      <div class="sec-lbl"><i class="ti ti-star"></i> 網站亮點</div>
+      <ul class="item-list hl" id="mo-hl"></ul>
+    </div>
+    <div class="card" style="margin-bottom:.8rem;">
+      <div class="sec-lbl"><i class="ti ti-alert-triangle"></i> 主要問題</div>
+      <ul class="item-list pl" id="mo-pl"></ul>
+    </div>
+    <div class="card">
+      <div class="sec-lbl"><i class="ti ti-tools"></i> 小編急救包（今天可完成）</div>
+      <ul class="item-list fx" id="mo-fx"></ul>
+    </div>
+  </div>
+
+  <!-- tab 1 -->
+  <div class="tab-panel" id="tp1">
+    <div class="pages-grid" id="pagesGrid"></div>
+  </div>
+
+  <!-- tab 2 -->
+  <div class="tab-panel" id="tp2">
+    <div class="ru-card" style="border-left-color:#334155;">
+      <h4>評分目的與範圍</h4>
+      <p>本健檢回答四個核心問題：①訪客能否迅速理解「這個系在學什麼、特色是什麼」？②訪客能否判斷「自己是否適合，以及畢業後可能的發展」？③訪客能否找到課程、系辦與正確的校級招生入口？④網站內容、圖片與資訊是否可信、易讀且仍在維護？</p>
+      <p class="ru-sub"><strong>納入範圍</strong>：對外公開、可由學系自行維護的首頁、歡迎頁、招生頁、專業／課程頁、師資頁、實驗室／學習場域頁、產學實習頁、新聞與相關內容頁。以桌機與手機版（建議 390×844px）檢視；手機版僅檢核內容呈現與排版，不測試網站載入速度。</p>
+    </div>
+
+    <div class="imp-note">
+      <strong>🚩 重要缺失標記（不另扣分、不設總分上限）：</strong>以下任一情況應在報告摘要標示為「優先改善」，避免高總分掩蓋決策障礙：
+      <ul>
+        <li>找不到或連錯校級正式招生入口</li>
+        <li>找不到系辦電話或電子信箱</li>
+        <li>找不到任一核心課程介紹</li>
+        <li>主導覽或招生入口有公開可重現的失效連結</li>
+      </ul>
+    </div>
+
+    <div class="ru-card">
+      <h4>項目一：學系特色與核心內容完整度<span class="ru-pts">/20分</span></h4>
+      <p>評估「該有的內容是否齊備，且能否辨識為本系特有」。</p>
+      <table class="ru-tbl"><thead><tr><th>子項</th><th>分數</th><th>判分標準</th></tr></thead><tbody>
+        <tr><td>特色辨識</td><td>5</td><td>首頁／歡迎頁有至少 3 項可辨識為本系專屬的描述（獨有課程、場域、認證、研究或合作等）得 5；有 1–2 項得 3；僅通用口號得 1；無法辨識得 0。</td></tr>
+        <tr><td>亮點佐證</td><td>4</td><td>主要亮點均有可查核佐證（數字、年度、獲獎、認證、具名合作對象、作品或案例）得 4；約半數有佐證得 2；多為形容詞或無佐證得 0。</td></tr>
+        <tr><td>核心課程</td><td>5</td><td>抽查 3 門代表性核心課程；每門具備白話說明、學生作品／成果、修畢後應用或出路，三門皆完整得 5；兩門完整得 3；一門完整得 1；皆無得 0。</td></tr>
+        <tr><td>實驗室／特色學習場域</td><td>3</td><td>工科院、資電學院：至少 2 個實驗室各有名稱、白話研究主題、設備／實作照片、負責教師，完整得 3；部分完整得 1–2；無得 0。其他學系不適用，本 3 分改由「特色課程或實作場域」完整度評估。</td></tr>
+        <tr><td>出路資訊</td><td>3</td><td>下列三項各 1 分：具年度與來源的量化去向資料；具名代表性就職企業或升學學校；具名系友／學長姐案例（照片、姓名、現職、心得）。資料無年份或來源不計量化資料分。</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ru-card">
+      <h4>項目二：文案轉譯品質<span class="ru-pts">/20分</span></h4>
+      <p>評估文字是否讓非本領域的高中生與家長看得懂，而非單純學術正確。</p>
+      <table class="ru-tbl"><thead><tr><th>子項</th><th>分數</th><th>判分標準</th></tr></thead><tbody>
+        <tr><td>白話易懂</td><td>8</td><td>抽查首頁、歡迎頁與 3 個主要內容區塊。大部分內容能以日常語言說明專業概念，首次出現的必要術語有解釋，得 8；偶有計畫書／公文式文字得 5；多數難懂得 2；幾乎未轉譯得 0。</td></tr>
+        <tr><td>價值主張清楚</td><td>5</td><td>訪客可在首頁或歡迎頁理解學什麼、與相近學系差異、可發展方向，且有具體內容支撐，得 5；三者缺一得 3；只見空泛口號得 1；無得 0。</td></tr>
+        <tr><td>系主任歡迎文字</td><td>3</td><td>有具名、近期且面向訪客的系主任文字，介紹系所特色或未來方向得 3；有文字但泛泛得 1；無得 0。</td></tr>
+        <tr><td>資訊組織與一致性</td><td>4</td><td>標題能預告內容、同一概念名稱一致、段落長度適中且重要訊息不埋在長文中得 4；部分問題得 2；普遍難以掃讀得 0。</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ru-card">
+      <h4>項目三：圖像品質與關連性<span class="ru-pts">/20分</span></h4>
+      <p>評估圖片是否真實呈現本系的教學、人、場域與成果，而不是只求裝飾。</p>
+      <table class="ru-tbl"><thead><tr><th>子項</th><th>分數</th><th>判分標準</th></tr></thead><tbody>
+        <tr><td>真實性與系所關連</td><td>6</td><td>首頁與主要頁面以能反映真實師生、課程、設備、作品或活動的影像為主，且與內容直接相關得 6；部分相關得 3–4；多為無關圖庫、AI 圖或泛用校園照得 0–2。</td></tr>
+        <tr><td>清晰度與明暗</td><td>5</td><td>圖片清晰、曝光適當、可辨識重點，且無明顯低解析度或過暗問題得 5；偶有問題得 3；普遍品質不佳得 0–1。</td></tr>
+        <tr><td>構圖與裁切</td><td>4</td><td>無變形、斷頭、不合理裁切或文字過度壓圖；主角與視覺焦點清楚得 4；部分問題得 2；普遍問題得 0。</td></tr>
+        <tr><td>整體視覺一致性</td><td>3</td><td>縮圖比例、色調與風格大致一致，無大量拼貼或海報式長文字圖片得 3；部分不一致得 1；普遍雜亂得 0。</td></tr>
+        <tr><td>師資照片完整性</td><td>2</td><td>教師均有合適、可辨識的個人照片得 2；少數缺漏或構圖不佳得 1；多數缺漏／不適合得 0。</td></tr>
+      </tbody></table>
+      <p class="ru-sub">不以特定 DPI、像素或檔案大小作為評分規則。影像品質以公開頁面實際呈現為準。</p>
+    </div>
+
+    <div class="ru-card">
+      <h4>項目四：內容深度、連結與任務完成度<span class="ru-pts">/15分</span></h4>
+      <p><strong>A．頁面與連結完整性（5分）</strong>：5分＝首頁中明示「了解更多」或具行動意圖的圖文均可前往對應內容，主要內容頁有可延伸閱讀或回相關主題的路徑，無過期 Hero／首頁活動；3分＝有少數應連未連、內容斷點或過期首頁資訊；1分＝多個重要區塊無法延伸閱讀，或首頁存在明顯過期資訊；0分＝主要內容路徑普遍中斷。Hero 輪播建議維持精簡、內容仍有效且每則有明確去向；<strong>不以固定則數直接扣分</strong>。</p>
+      <p><strong>B．招生正式入口正確性（4分）</strong>：招生頁應依管道分類，且每一招生管道元件均連往校級招生系統白名單中對應的正式網址（<code>https://www.fcu.edu.tw/recurit_list/</code> 開頭及核定 slug）。4分＝所有呈現的招生管道均有正確白名單連結，標示與目的地一致；2分＝有 1 個管道漏連或標示／目的地不一致；0分＝有 2 個以上錯漏，或以非白名單網址取代正式招生入口。招生時程、簡章、報名、書審與面試規範之內容正確性以校級系統為準，不要求學系另行維護。</p>
+      <p><strong>白名單 slug 清單：</strong>college_special／college_star／college_apply／college_exam／college_s42_special／college_s42_skill／college_s42_interview／college_sport／college_disability／mmigrant_resident／istm_dualdegree／post-baccprogadmission3／post-baccprogadmission4／college_transfer_feb／college_transfer／ce-interview／ce_apply／veteran／dr_interview／dr_exam／dr_direct／mastr_interview／mastr_exam／mastr_cn／master_industr／master_job_115／master_army_115／thirty-plus／international-spring-semester／international-fall-semester／international-transfer-for-spring／international-transfer-for-summer／international-foundation-program／intense-program／overseas_fall_1／overseas_fall_2／overseas_spring／oversea_united（由校級業務單位維護版本，新增管道須人工更新）</p>
+      <p><strong>C．專業內容可深入了解（3分）</strong>：3分＝學士／碩博士專業頁有課程介紹與連結，重要專題、實作或實習可深入查看近 3 年成果、照片／影片或學生心得，產研／實習頁有具名合作或學生經驗；2分＝有基本課程或專題資訊但深度／更新度不足；1分＝僅有課程名稱或概述；0分＝找不到相關專業內容。</p>
+      <p><strong>D．三任務測試（3分）</strong>：從首頁出發，只使用頁面可見連結、不用站內搜尋。報告須附實際點擊路徑與點擊數。</p>
+      <table class="ru-tbl"><thead><tr><th>任務</th><th>對象</th><th>合格條件</th><th>分數</th></tr></thead><tbody>
+        <tr><td>找到對應招生管道的校級正式資訊</td><td>高三生</td><td>3 次點擊內</td><td>1</td></tr>
+        <tr><td>找到任一門核心課程介紹</td><td>高三生／專業興趣訪客</td><td>3 次點擊內</td><td>1</td></tr>
+        <tr><td>找到系辦電話或電子信箱</td><td>家長／一般訪客</td><td>2 次點擊內；footer 可視為 0 次</td><td>1</td></tr>
+      </tbody></table>
+      <p class="ru-sub">若某任務因已判定的 404 連結而失敗，記錄失敗但不另扣分；其餘資訊架構或路徑問題依本表扣分。</p>
+    </div>
+
+    <div class="ru-card">
+      <h4>項目五：圖文適配與閱讀舒適度<span class="ru-pts">/10分</span></h4>
+      <table class="ru-tbl"><thead><tr><th>子項</th><th>分數</th><th>判分標準</th></tr></thead><tbody>
+        <tr><td>手機版呈現</td><td>6</td><td>以手機版為主要判定。文字、圖片、卡片與按鈕不溢出、不遮蔽、不重疊，重要內容可正常閱讀與操作得 6；局部問題得 3–4；重要區塊破版得 0–2。</td></tr>
+        <tr><td>圖文適配與掃讀性</td><td>4</td><td>文字與圖片比例適當，每個主要議題區塊有清楚主題與簡短說明，不使用大量文字塞入圖片，單頁內容組數不過度破碎（原則上不超過 24 組）得 4；部分問題得 2；普遍難讀得 0。</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ru-card">
+      <h4>項目六：新聞與資訊即時性<span class="ru-pts">/8分</span></h4>
+      <p>「新聞」是已發生事件的報導，應有主詞、行動與成果／數據；報名邀請屬活動，純條列屬公告。邊界案例列為待人工複核，不以 AI 判斷直接扣分。<strong>所有「近期」均以實際健檢日往前回推計算，不使用固定日期門檻。</strong></p>
+      <table class="ru-tbl"><thead><tr><th>子項</th><th>分數</th><th>判分標準</th></tr></thead><tbody>
+        <tr><td>單位新聞更新</td><td>4</td><td>健檢日前 180 天內至少有 1 則符合定義的單位新聞得 4；181–365 天得 2；超過 365 天或無新聞得 0。</td></tr>
+        <tr><td>消息總覽與校園新聞維護</td><td>2</td><td>主要消息總覽與校園新聞頁的最新資訊在 180 天內，且沒有以活動／公告大量冒充新聞得 2；部分問題得 1；明顯停滯得 0。</td></tr>
+        <tr><td>過期資訊與師資更新</td><td>2</td><td>首頁與重要頁面未保留已結束活動作為現行資訊，師資異動已更新得 2；有少數問題得 1；明顯過期得 0。</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ru-card">
+      <h4>項目七：技術健康度（404＋SEO）<span class="ru-pts">/7分</span></h4>
+      <p><strong>A．公開連結正常性（4分）</strong>：從首頁及 10–15 個主要頁面，檢查該頁所有同網域連結與招生正式入口，建議掃描深度 1–2 層，須記錄檢查日期、起始頁、深度、數量與排除項目。主導覽、招生正式入口、系辦聯絡等核心連結失效，每個扣 2 分；一般內容連結失效，每個扣 1 分；本子項最低 0 分。<strong>HTTP 200 但頁面實際顯示「找不到資料」等假成功頁，視為失效。</strong>本檢核為抽樣掃描，不宣稱窮舉全站。<strong>凡回報 404（或其他失效狀態）之連結，報告中須附上完整可點擊的網址，供學系與網管直接查核、重現與回報，不得只描述「有連結失效」而不列出實際 URL；同時須註明該連結實際所在的頁面元件位置（如：主導覽選單／首頁 Hero 輪播／內文段落／頁尾等），以原始碼比對確認後才可標註，不得僅憑連結網址或 slug 文字意涵（如網址含「招生」字樣）就推定其為主導覽或核心入口連結——核心連結（-2分）與一般連結（-1分）的嚴重度分級、以及是否觸發「🚩找不到或連錯校級正式招生入口」重要缺失標記，均須以此定位結果為準。</strong></p>
+      <p><strong>B．SEO 基礎設定（3分）</strong>：抽查首頁、3 個主要頁面與 3 則新聞（共 7 頁；新聞不足時以其他主要頁補足）。</p>
+      <table class="ru-tbl"><thead><tr><th>得分</th><th>判定</th></tr></thead><tbody>
+        <tr><td>3</td><td>7 頁均有可用 og:image 與 description。</td></tr>
+        <tr><td>2</td><td>5–6 頁完整。</td></tr>
+        <tr><td>1</td><td>3–4 頁完整。</td></tr>
+        <tr><td>0</td><td>0–2 頁完整。</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ru-card" style="border-left-color:#334155;">
+      <h4>通用執行規則</h4>
+      <p class="ru-sub">
+        1. 每一子項均須記錄「得分、證據網址、判定理由、改善建議」；主觀描述不可單獨作為扣分依據。<br>
+        2. 同一缺失原則上只在一個最直接的子項扣分，不得兩邊重複扣分。<br>
+        3. 若「路徑設計」與「內容缺漏」是兩個可區分的問題，可分別評估；任務失敗純因已判定的失效連結造成者，只記錄失敗不重複扣分。<br>
+        4. 無法確認的內容標記為「待人工複核」，不得逕以猜測扣分。<br>
+        5. 所有「近期」均以實際健檢日往前回推計算；不得使用固定日期門檻。
+      </p>
+    </div>
+
+    <div class="excl-note">
+      <strong>⚠️ 評分排除項目：</strong>①全校統一公版的主導覽架構、網站載入速度與主機效能；②無障礙相關事項，包括鍵盤操作、替代文字、標題階層、色彩對比、表單可用性等；③校級招生單位負責維護的招生時程、簡章、報名、書審與面試規範之內容正確性——學系僅評估是否連至正確的校級正式入口。<br><br>
+      評分標準 <strong>v5.0</strong>（2026-07-11 起適用，配分 20／20／20／15／10／8／7，與 v4.1 相同）。v5.0 為結構性改版：①各項目拆解為子項評分表，要求逐子項記錄證據網址與判定理由；②新增「重要缺失標記」機制，優先改善事項不受總分掩蓋；③項目四 Hero 則數改為質化判斷（不再以 3–6 則硬性扣分），招生白名單改採「校級正式入口是否連對」的判定邏輯；④項目六新聞時間門檻由固定日期（2025-08-01）改為「健檢日往前 180 天」的動態門檻；⑤項目七 404 罰則由核心扣 3／一般扣 1 調整為核心扣 2／一般扣 1，並新增「假成功頁視為失效」規則；⑥明確排除無障礙相關事項與校級招生內容正確性。
+    </div>
+  </div>`;
+
+  // dim bars
+  const barsEl = document.getElementById('dimBars');
+  DIMS.forEach(dim=>{
+    const v=d[dim.id], p=pct(v,dim.max);
+    const col=p>=80?'#16a34a':p>=70?'#2563eb':p>=60?'#d97706':'#dc2626';
+    barsEl.innerHTML+=`<div class="dbar-row">
+      <span class="dbar-name">${esc(dim.name)}</span>
+      <div class="dbar-bg"><div class="dbar-fill" style="width:${p}%;background:${col}"></div></div>
+      <span class="dbar-val">${v}/${dim.max}</span>
+    </div>`;
+  });
+
+  // lists (highlights ≤5, problems ≤10)
+  document.getElementById('mo-hl').innerHTML=(d.highlights||[]).slice(0,5).map(t=>`<li>${esc(t)}</li>`).join('');
+  document.getElementById('mo-pl').innerHTML=(d.pain_points||[]).slice(0,10).map(t=>`<li>${esc(t)}</li>`).join('');
+  document.getElementById('mo-fx').innerHTML=(d.quick_fixes||[]).map(t=>`<li>${esc(t)}</li>`).join('');
+
+  // pages grid — two-column cards, text-focused
+  const grid=document.getElementById('pagesGrid');
+  const pageList = (d.pages && d.pages.length) ? d.pages : (d.page_notes || []);
+  const scored = !!(d.pages && d.pages.length);
+  pageList.forEach(p=>{
+    const card=document.createElement('div');
+    card.className='page-card';
+    let badgeHtml;
+    let dimStr='';
+    if(scored){
+      const pg=gradeKey(p.score);
+      badgeHtml = `<span class="ps ps${pg}">${p.score}</span>`;
+      dimStr = [
+        p.d6!==undefined?`特色 ${p.d6}/20`:null,
+        `文案 ${p.d1}/20`,`圖像 ${p.d2}/20`,`連結 ${p.d3}/15`,`閱讀 ${p.d4}/10`,
+        p.d5>0?`即時 ${p.d5}/8`:null
+      ].filter(Boolean).map(s=>`<span class="dim-mini">${s}</span>`).join('');
+    } else {
+      badgeHtml = `<span class="ps psN" style="width:auto;padding:0 8px;font-size:10px;">已檢查</span>`;
+    }
+    card.innerHTML=`
+      <div class="page-card-hd">
+        ${badgeHtml}
+        <span class="page-card-name">${esc(p.name)}</span>
+        <a class="pg-link" href="${esc(safeUrl(p.url))}" target="_blank" rel="noopener noreferrer">↗ 前往</a>
+      </div>
+      <div class="page-card-body">
+        ${dimStr?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${dimStr}</div>`:''}
+        ${p.notes?`<p class="page-note-text">${esc(p.notes)}</p>`:'<p style="font-size:13px;color:#94a3b8;">尚無逐頁建議</p>'}
+      </div>`;
+    grid.appendChild(card);
+  });
+  if(!pageList.length){
+    grid.innerHTML = '<p style="grid-column:1/-1;color:#94a3b8;font-size:13px;padding:1rem;">本次健檢尚未記錄逐頁檢查資料。</p>';
+  }
+
+  // radar
+  const ctx=document.getElementById('radarCanvas').getContext('2d');
+  if(radarChart){radarChart.destroy();}
+  radarChart=new Chart(ctx,{
+    type:'radar',
+    data:{
+      labels:DIMS.map(x=>x.name),
+      datasets:[{
+        label:'得分（%）',
+        data:DIMS.map(x=>pct(d[x.id],x.max)),
+        backgroundColor:'rgba(200,16,46,.12)',
+        borderColor:'rgba(200,16,46,.85)',
+        pointBackgroundColor:'rgba(200,16,46,1)',
+        pointRadius:4,
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:25,font:{size:9}},pointLabels:{font:{size:10}}}},
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+function switchTab(i){
+  document.querySelectorAll('.tab').forEach((b,idx)=>b.classList.toggle('on',idx===i));
+  document.querySelectorAll('.tab-panel').forEach((p,idx)=>p.classList.toggle('on',idx===i));
+}
+
+function openSidebar(){
+  document.getElementById('sb').classList.add('open');
+  document.getElementById('sb-overlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sb').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('show');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  buildSidebar();
+  updateTopbar();
+  document.getElementById('hb-btn').onclick=openSidebar;
+  document.getElementById('sb-close-btn').onclick=closeSidebar;
+  document.getElementById('sb-overlay').onclick=closeSidebar;
+});
+</script>
+</body>
+</html>
